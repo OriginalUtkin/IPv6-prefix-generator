@@ -56,29 +56,6 @@ class Trie:
             print(self.preorder(root.left))
             print(self.preorder(root.right))
 
-    # def set_leaf(self):
-    #
-    #     stack = list()
-    #     stack.append(self.root_node)
-    #
-    #     while stack:
-    #
-    #         current_node = stack.pop()
-    #         # print(current_node.node_value)
-    #
-    #         if current_node.right:
-    #             stack.append(current_node.right)
-    #
-    #         if current_node.left:
-    #             stack.append(current_node.left)
-    #
-    #         if current_node.prefix_leaf:
-    #             self.leaf_nodes += 1
-    #         # if not current_node.left and not current_node.right:
-    #         #     current_node.prefix_leaf = True
-    #         #     self.leaf_nodes += 1
-    #             # the node is a lead node -> generate prefix
-
     def __str__(self):
         return f"Trie depth: {self.trie_depth}\n" \
                f"Number of prefix leafs: {self.leaf_nodes} "

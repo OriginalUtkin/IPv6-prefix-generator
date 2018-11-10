@@ -126,64 +126,8 @@ if __name__ == "__main__":
     for prefix in input_prefixes:
         binary_trie.add_node(get_binary_prefix(prefix))
 
-    # current = binary_trie.root_node
-    # iter = 0
-    #
-    # while True:
-    #
-    #     if not current.left and not current.right:
-    #         print("Trie end")
-    #         break
-    #     else:
-    #         if current.left:
-    #             print(str(iter) + '->left')
-    #             current = current.left
-    #             iter += 1
-    #             continue
-    #
-    #         if current.right:
-    #             print(str(iter) + '->right')
-    #             current = current.right
-    #             iter += 1
-    #             continue
 
-    # prefix = "2407:8800:1::/35"
-    # print(get_binary_prefix(prefix))
-    # binary_trie.add_node(get_binary_prefix(prefix))
-    #
-
-    #
-
-    # # Add left part of binary trie
-    # binary_trie.add_node('0')
-    # binary_trie.add_node('00')
-    # binary_trie.add_node('000')
-    # binary_trie.add_node('0000')
-    # binary_trie.add_node('00000')
-    # binary_trie.add_node('00000000')
-    # binary_trie.add_node('00000001')
-    #
-    # # Add right part of binary trie
-    # binary_trie.add_node('1')
-    # binary_trie.add_node('11')
-    # binary_trie.add_node('111')
-    # binary_trie.add_node('1111')
-    # binary_trie.add_node('110')
-    # binary_trie.add_node('1100')
-    # binary_trie.add_node('11000')
-
-    # binary_trie.add_node('0')
-    # binary_trie.add_node('00')
-    # binary_trie.add_node('01')
-    # binary_trie.add_node('010')
-    # binary_trie.add_node('011')
-    # binary_trie.add_node('1')
-    # binary_trie.add_node('11')
-    # binary_trie.add_node('110')
     binary_trie.preorder(binary_trie.root_node)
-
-    # binary_trie.set_leaf()
-    # print(binary_trie.leaf_nodes)
 
 
 
