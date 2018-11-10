@@ -1,4 +1,4 @@
-from Trie import Node
+from V6Gene.Trie import Node
 
 
 class Trie:
@@ -41,6 +41,16 @@ class Trie:
         # Set a trie depth
         if current_node.depth > self.trie_depth:
             self.trie_depth = current_node.depth
+
+    def preorder(self, root):
+        if root:
+            if not root.node_value:
+                print("None " + str(root.depth))
+            else:
+                print("Value: " + root.node_value + " depth:" + str(root.depth))
+
+            print(self.preorder(root.left))
+            print(self.preorder(root.right))
 
 
     # def traversal(self):

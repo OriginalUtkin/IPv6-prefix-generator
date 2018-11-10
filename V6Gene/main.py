@@ -1,4 +1,4 @@
-from Trie import Trie
+from V6Gene.Trie import Trie
 import argparse
 import ipaddress
 

@@ -1,5 +1,5 @@
-from Trie import Trie
-from main import get_binary_prefix
+from V6Gene.Trie import Trie
+from V6Gene.main import get_binary_prefix
 import unittest
 
 
@@ -22,7 +22,7 @@ class TrieTest(unittest.TestCase):
     def test_trie_properties(self):
 
         binary_trie = Trie.Trie()
-    
+
         # Add right part of binary trie
         binary_trie.add_node('11')
         binary_trie.add_node('1110')
