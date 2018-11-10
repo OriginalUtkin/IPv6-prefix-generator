@@ -13,6 +13,6 @@ class Node:
         self.right = None
 
         # Node's characteristics
-        self.prefix_leaf = False
+        self.prefix_node = False
 
         self.level = 0
