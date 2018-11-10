@@ -35,27 +35,6 @@ def validate_int(value):
     return value
 
 
-def convert_hextet(hextet):
-    """
-
-    :param hextet:
-    :return:
-    """
-
-    return ''.join([format(int(bin(int(symbol, 16))[2:], 2), '04b') for symbol in hextet])
-
-
-def restore_hextet(hextet):
-    """
-
-    :param hextet:
-    :return:
-    """
-    missing_bits = 4 - len(hextet)
-
-    return ('0' * missing_bits) + hextet
-
-
 def read_input(input_file):
     """
 
@@ -71,7 +50,7 @@ def read_input(input_file):
 
             # separate line to list which contains address and prefix length
             separated_line = address.split('/')
-            
+
             try:
                 _ = ipaddress.IPv6Address(separated_line[0])
                 prefix_len = int(separated_line[1])
@@ -94,21 +73,12 @@ def get_binary_prefix(string):
     :param string:
     :return:
     """
-    parsed_address = {'prefix':string[:string.find('/')],
-                      'length':int(string[string.find('/')+1:])}
+    parsed_address = {'prefix': string[:string.find('/')],
+                      'length': int(string[string.find('/') + 1:])}
 
-    hextets = parsed_address['prefix'].split(':')
+    hex_prefix = ipaddress.IPv6Address(parsed_address['prefix'])
 
-    binary_prefix= []
-
-    for hextet in hextets:
-
-        if len(hextet) != 4:
-            hextet = restore_hextet(hextet)
-
-        binary_prefix.append(convert_hextet(hextet))
-
-    binary_prefix = ''.join(binary_prefix)
+    binary_prefix = "".join(format(x, '08b') for x in bytearray(hex_prefix.packed))
 
     return binary_prefix[:parsed_address['length']]
 
@@ -156,7 +126,6 @@ if __name__ == "__main__":
     for prefix in input_prefixes:
         binary_trie.add_node(get_binary_prefix(prefix))
 
-
     # current = binary_trie.root_node
     # iter = 0
     #
@@ -184,7 +153,6 @@ if __name__ == "__main__":
     #
 
     #
-
 
     # # Add left part of binary trie
     # binary_trie.add_node('0')
