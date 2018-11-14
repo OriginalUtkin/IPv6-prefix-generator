@@ -67,11 +67,11 @@ class Trie:
         """
 
         # Allocation of IPv6 address space rules: RIR to LIR, LIR to ISP, ISP to EU
-        tt = {'RIR': [12, 20], 'LIR': [32, 16], 'ISP': [48, 16]}
+        allocation_rules = {'RIR': [12, 20], 'LIR': [32, 16], 'ISP': [48, 16]}
 
         print(f'Generator function start')
 
-        for key, value in tt.items():
+        for key, value in allocation_rules.items():
 
             if value[0] - node.depth == 0:
                 print(f'generating len is {value[1]}')
