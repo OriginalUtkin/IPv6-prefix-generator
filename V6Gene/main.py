@@ -1,6 +1,7 @@
 from V6Gene.Trie import Trie
 import argparse
 import ipaddress
+import math
 
 
 def validate_file(path, modifier):
@@ -28,6 +29,32 @@ def validate_int(value):
 
         if amount < 0:
             raise argparse.ArgumentTypeError("Value isn't represented by positive number")
+
+    except ValueError:
+        raise
+
+    return value
+
+
+def validate_rgr(value):
+    """
+
+    :param value:
+    :return:
+    """
+    # TODO : chang eit to int and use validate int
+
+    try:
+        value = float(value)
+
+        if value < 0:
+            raise argparse.ArgumentTypeError("RGR value should be a non-negative value")
+
+        if value > 100:
+            raise argparse.ArgumentTypeError("RGR value can't be greater than 100")
+
+        if math.isnan(value) or math.isinf(value):
+            raise argparse.ArgumentTypeError("RGR value is NaN or Inf value")
 
     except ValueError:
         raise
@@ -95,12 +122,9 @@ def parse_args():
                                                        "for building binary trie")
     parser.add_argument('--output', help="")
 
-    # TODO: change type
-    # parser.add_argument('--prefix_quantity', required = True, type='' ,help="")
+    parser.add_argument('--prefix_quantity', required=True, type=validate_int, help="")
 
-    # # TODO: change type
-    # parser.add_argument('--rgr', required = True, type=, help="")
-    #
+    parser.add_argument('--rgr', required=True, type=validate_rgr, help="")
 
     # # TODO : ????
     # parser.add('--level')
