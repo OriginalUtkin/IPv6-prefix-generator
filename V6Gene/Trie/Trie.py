@@ -1,4 +1,5 @@
 from V6Gene.Trie import Node
+import random
 
 
 class Trie:
@@ -8,13 +9,17 @@ class Trie:
         self.trie_depth = 0
         self.prefix_nodes = 0
 
-    def add_node(self, node_value):
+    def add_node(self, node_value, parent_node=None):
         """
 
         :param node_value:
+        :param parent_node
         :return:
         """
-        current_node = self.root_node
+        if not parent_node:
+            current_node = self.root_node
+        else:
+            current_node = parent_node
 
         for bit in node_value:
 
@@ -43,39 +48,82 @@ class Trie:
             self.trie_depth = current_node.depth
 
     def preorder(self, root):
+
         if root:
-            if not root.node_value:
-                print("None " + str(root.depth))
+            print(root.node_value)
+
+            if not root.left and not root.right:
+                print(f'Leaf node has depth {root.depth}')
+                self._generate_prefix(root)
+
+            self.preorder(root.left)
+            self.preorder(root.right)
+
+    def _generate_prefix(self, node):
+        """
+
+        :param node:
+        :return:
+        """
+
+        # Allocation of IPv6 address space rules: RIR to LIR, LIR to ISP, ISP to EU
+        tt = {'RIR': [12, 20], 'LIR': [32, 16], 'ISP': [48, 16]}
+
+        print(f'Generator function start')
+
+        for key, value in tt.items():
+
+            if value[0] - node.depth == 0:
+                print(f'generating len is {value[1]}')
+                generated_value = random.getrandbits(value[1])
+                binary_repr = format(generated_value, '0' + str(value[1]) + 'b')
+                self.add_node(binary_repr, node)
             else:
-                print("Value: " + root.node_value + " depth:" + str(root.depth))
+                continue
 
-            print(self.preorder(root.left))
-            print(self.preorder(root.right))
+    # function to print all path from root
+    # to leaf in binary tree
+    def printPaths(self, root):
+        # list to store path
+        path = []
+        self.printPathsRec(root, path, 0)
 
 
-    # def traversal(self):
-    #
-    #     stack = list()
-    #     stack.append(self.root_node)
-    #
-    #     while stack:
-    #
-    #         current_node = stack.pop()
-    #         # print(current_node.node_value)
-    #
-    #         if current_node.right:
-    #             stack.append(current_node.right)
-    #
-    #         if current_node.left:
-    #             stack.append(current_node.left)
-    #
-    #         if current_node.prefix_leaf:
-    #             self.leaf_nodes += 1
-    #
-    #         if not current_node.left and not current_node.right:
-    #             current_node.prefix_leaf = True
-    #             self.leaf_nodes += 1
-    #             # the node is a lead node -> generate prefix
+    def printPathsRec(self, root, path, pathLen):
+
+        # Base condition - if binary tree is
+        # empty return
+        if root is None:
+            return
+
+        # add current root's data into
+        # path_ar list
+
+        # if length of list is gre
+        if (len(path) > pathLen):
+            path[pathLen] = root.node_value
+        else:
+            path.append(root.node_value)
+
+            # increment pathLen by 1
+        pathLen = pathLen + 1
+
+        if root.left is None and root.right is None:
+
+            # leaf node then print the list
+            self.printArray(path, pathLen)
+        else:
+            # try for left and right subtree
+            self.printPathsRec(root.left, path, pathLen)
+            self.printPathsRec(root.right, path, pathLen)
+
+    # Helper function to print list in which
+    # root-to-leaf path is stored
+    def printArray(self,ints, len):
+
+        for i in ints[0: len]:
+            print(i,end="")
+        print()
 
 
 
