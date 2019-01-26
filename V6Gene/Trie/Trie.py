@@ -1,21 +1,64 @@
 from V6Gene.Trie.Node import Node
 import random
 import attr
+from typing import Union, Dict, List
 
 
 @attr.s
 class Trie:
 
     root_node = attr.ib(default=Node(None, 0), type=Node)
-    trie_depth = attr.ib(default=0, type=int)
-    prefix_nodes = attr.ib(default=0, type=int)
+    _generated_prefixes = attr.ib(factory=list, type=list)
+    _trie_depth = attr.ib(default=0, type=int)
+    _prefix_leaf_nodes = attr.ib(factory=dict, type=dict)
+    _prefix_nodes = attr.ib(factory=dict, type=dict)
 
-    def add_node(self, node_value, parent_node=None):
+    def __attrs_post_init__(self):
+        for value in range(64):
+            self._prefix_nodes[value] = 0
+    @property
+    def generated_prefixes(self) -> List:
+        """Return all generated prefixes.
+
+        :return: list; all generated prefixes
+        """
+        return self._generated_prefixes
+
+    @property
+    def trie_depth(self) -> int:
+        """Return trie depth.
+
+        :return: int; trie depth
+        """
+        return self._trie_depth
+
+    @property
+    def prefix_leaf_nodes(self) -> Dict:
+        """Return all leaf prefixes.
+        For set this parameter call a preorder method with :param action as 'statistic'
+
+        :return: dictionary; dict in format {level: num. leaf prefixes}
+        """
+        return self._prefix_leaf_nodes
+
+    @property
+    def prefix_nodes(self) -> Dict:
+        return self._prefix_nodes
+
+    def set_root_as_prefix(self) -> None:
+        """Set prefix flag for root node.
+
+        :return: None
+        """
+        self.root_node.prefix_flag = True
+        self._prefix_nodes[0] += 1
+
+    def add_node(self, node_value: str, parent_node: Union[None, Node] = None) -> None:
         """
 
-        :param node_value:
-        :param parent_node
-        :return:
+        :param node_value: string; string representation of node
+        :param parent_node None or Node; node object which represent the parent for added node
+        :return: None
         """
         if not parent_node:
             current_node = self.root_node
@@ -41,26 +84,35 @@ class Trie:
                 current_node = current_node.right_child
 
         # Added node is a prefix node
-        current_node.prefix_node = True
-        self.prefix_nodes += 1
+        current_node.prefix_flag = True
+        self._prefix_nodes[current_node.depth] += 1
 
         # Set a trie depth
-        if current_node.depth > self.trie_depth:
-            self.trie_depth = current_node.depth
+        if current_node.depth > self._trie_depth:
+            self._trie_depth = current_node.depth
 
-    def preorder(self, root):
+    # TODO: Change recursive way to iterative; Action won't work correct there
+    def preorder(self, node: Node, action: str) -> None:
 
-        if root:
-            print(root.node_value)
+        if node:
+            # print(node.node_value)
 
-            if not root.left and not root.right:  # We found a leaf node
-                print(f'Leaf node has depth {root.depth}')
-                self._generate_prefix(root)
+            if not node.left_child and not node.right_child:  # We found a leaf node
 
-            self.preorder(root.left)
-            self.preorder(root.right)
+                if action is "statistic":
 
-    def _generate_prefix(self, node):
+                    if not self._prefix_leaf_nodes.get(node.depth):
+                        self._prefix_leaf_nodes[node.depth] = 1
+
+                    else:
+                        self._prefix_leaf_nodes[node.depth] += 1
+                else:
+                    self._generate_prefix(node)
+
+            self.preorder(node.left_child, action)
+            self.preorder(node.right_child, action)
+
+    def _generate_prefix(self, node: Node) -> None:
         """
 
         :param node:
@@ -81,52 +133,3 @@ class Trie:
                 self.add_node(binary_repr, node)
             else:
                 continue
-
-    # function to print all path from root
-    # to leaf in binary tree
-    def printPaths(self, root):
-        # list to store path
-        path = []
-        self.printPathsRec(root, path, 0)
-
-    def printPathsRec(self, root, path, pathLen):
-
-        # Base condition - if binary tree is
-        # empty return
-        if root is None:
-            return
-
-        # add current root's data into
-        # path_ar list
-
-        # if length of list is gre
-        if (len(path) > pathLen):
-            path[pathLen] = root.node_value
-        else:
-            path.append(root.node_value)
-
-            # increment pathLen by 1
-        pathLen = pathLen + 1
-
-        if root.left is None and root.right is None:
-
-            # leaf node then print the list
-            self.printArray(path, pathLen)
-        else:
-            # try for left and right subtree
-            self.printPathsRec(root.left, path, pathLen)
-            self.printPathsRec(root.right, path, pathLen)
-
-    # Helper function to print list in which
-    # root-to-leaf path is stored
-    def printArray(self,ints, len):
-
-        for i in ints[0: len]:
-            print(i,end="")
-        print()
-
-
-
-    def __str__(self):
-        return f"Trie depth: {self.trie_depth}\n" \
-               f"Number of prefix nodes: {self.prefix_nodes} "
