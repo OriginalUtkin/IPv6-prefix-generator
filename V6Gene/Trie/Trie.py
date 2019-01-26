@@ -1,13 +1,14 @@
-from V6Gene.Trie import Node
+from V6Gene.Trie.Node import Node
 import random
+import attr
 
 
+@attr.s
 class Trie:
 
-    def __init__(self):
-        self.root_node = Node.Node(None, 0)
-        self.trie_depth = 0
-        self.prefix_nodes = 0
+    root_node = attr.ib(default=Node(None, 0), type=Node)
+    trie_depth = attr.ib(default=0, type=int)
+    prefix_nodes = attr.ib(default=0, type=int)
 
     def add_node(self, node_value, parent_node=None):
         """
@@ -26,18 +27,18 @@ class Trie:
             if bit == '0':
 
                 # add node to trie as a left child
-                if not current_node.left:
-                    current_node.left = Node.Node(bit, current_node.depth + 1)
+                if not current_node.left_child:
+                    current_node.left_child = Node(bit, current_node.depth + 1)
 
-                current_node = current_node.left
+                current_node = current_node.left_child
 
             else:
 
                 # add node to trie as a right child
-                if not current_node.right:
-                    current_node.right = Node.Node(bit, current_node.depth + 1)
+                if not current_node.right_child:
+                    current_node.right_child = Node(bit, current_node.depth + 1)
 
-                current_node = current_node.right
+                current_node = current_node.right_child
 
         # Added node is a prefix node
         current_node.prefix_node = True
@@ -52,7 +53,7 @@ class Trie:
         if root:
             print(root.node_value)
 
-            if not root.left and not root.right:
+            if not root.left and not root.right:  # We found a leaf node
                 print(f'Leaf node has depth {root.depth}')
                 self._generate_prefix(root)
 
@@ -67,16 +68,16 @@ class Trie:
         """
 
         # Allocation of IPv6 address space rules: RIR to LIR, LIR to ISP, ISP to EU
-        allocation_rules = {'RIR': [12, 20], 'LIR': [32, 16], 'ISP': [48, 16]}
+        allocation_rules = {'RIR': [[12, 31], 20], 'LIR': [[32, 47], 16], 'ISP': [[48, 63], 16]}  # TODO: don't generate for other levels except RIR to LIR
 
         print(f'Generator function start')
 
         for key, value in allocation_rules.items():
-
-            if value[0] - node.depth == 0:
-                print(f'generating len is {value[1]}')
-                generated_value = random.getrandbits(value[1])
-                binary_repr = format(generated_value, '0' + str(value[1]) + 'b')
+            if value[0][0] <= node.depth <= value[0][1]:
+                # specified number of bits which will be generated for current prefix depends on depth of node
+                generate_num = value[1] - (node.depth - value[0][0])
+                generated_sequence = random.getrandbits(generate_num)
+                binary_repr = format(generated_sequence, '0' + str(generated_sequence) + 'b')
                 self.add_node(binary_repr, node)
             else:
                 continue
@@ -87,7 +88,6 @@ class Trie:
         # list to store path
         path = []
         self.printPathsRec(root, path, 0)
-
 
     def printPathsRec(self, root, path, pathLen):
 

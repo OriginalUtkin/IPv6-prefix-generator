@@ -15,6 +15,7 @@ def random_generate(number_of_prefixes):
 
 
 def binary_to_hex(binary_representation):
+    # TODO: In progress
     tt = [hex(int(binary_representation[i:i+4], 2))[-1] for i in range(0,len(binary_representation),4)]
     hex_rep = "".join(tt)
 

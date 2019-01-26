@@ -1,18 +1,21 @@
+import attr
+
+from typing import Union
+
+
+@attr.s
 class Node:
 
-    def __init__(self, node_value, node_depth):
-        """
+    node_value = attr.ib(type=Union[None, int])
+    depth = attr.ib(type=int)
 
-        :param node_value:
-        """
-        self.node_value = node_value
-        self.depth = node_depth
+    left_child = attr.ib(default=None)
+    right_child = attr.ib(default=None)
 
-        # Node's child
-        self.left = None
-        self.right = None
+    is_prefix = attr.ib(default=False, type=bool)
+    level = attr.ib(default=0, type=int)
 
-        # Node's characteristics
-        self.prefix_node = False
-
-        self.level = 0
+    @node_value.validator
+    def node_value_validator(self, attribute, value):
+        if value != 0 or value != 1 or value is not None:
+            raise ValueError("node value has to be 0, 1 or None value")

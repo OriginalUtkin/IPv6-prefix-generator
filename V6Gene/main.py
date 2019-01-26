@@ -135,10 +135,12 @@ def parse_args():
                                                                         "seed prefix file to the number of all prefixes"
                                                                         " to be generated")
 
+    # TODO: add validator
+    parser.add_argument('--depth-distribution', required=True, help="Defines a distribution by depth")
+
 
     # # TODO : ????
     # parser.add('--level')
-    # parser.add('--depth')
 
     return vars(parser.parse_args())
 
