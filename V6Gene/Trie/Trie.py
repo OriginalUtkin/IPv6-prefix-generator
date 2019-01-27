@@ -119,7 +119,7 @@ class Trie:
             self.preorder(node.left_child, action)
             self.preorder(node.right_child, action)
 
-    # TODO
+    # TODO: refactor
     def get_depths(self, level):
         return [key for key in self._prefix_leaf_nodes.keys() if key < level]
 
