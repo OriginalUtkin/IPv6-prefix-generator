@@ -1,4 +1,4 @@
-from V6Gene.v6Generator import V6Generator
+from V6Gene.Generator.v6Generator import V6Generator
 import argparse
 import ipaddress
 import math
