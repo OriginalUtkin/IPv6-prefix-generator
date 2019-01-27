@@ -16,11 +16,12 @@ class Trie:
     def __attrs_post_init__(self):
         for value in range(64):
             self._prefix_nodes[value] = 0
+
     @property
     def generated_prefixes(self) -> List:
         """Return all generated prefixes.
 
-        :return: list; all generated prefixes
+        :return: list; list which contains all generated prefixes
         """
         return self._generated_prefixes
 
@@ -37,13 +38,19 @@ class Trie:
         """Return all leaf prefixes.
         For set this parameter call a preorder method with :param action as 'statistic'
 
-        :return: dictionary; dict in format {level: num. leaf prefixes}
+        :return: dictionary; dict in format {depth: num. leaf node prefixes}
         """
         return self._prefix_leaf_nodes
 
     @property
     def prefix_nodes(self) -> Dict:
-        return self._prefix_nodes
+        """Return all prefix nodes by level.
+        Automatically updated when new node are added into trie. Return depth values where num. of prefix nodes are
+        greater than zero
+
+        :return: dictionary; dict in format {depth: num. prefixes nodes}
+        """
+        return {key: value for key, value in self._prefix_nodes.items() if value > 0}
 
     def set_root_as_prefix(self) -> None:
         """Set prefix flag for root node.
@@ -91,7 +98,6 @@ class Trie:
         if current_node.depth > self._trie_depth:
             self._trie_depth = current_node.depth
 
-    # TODO: Change recursive way to iterative; Action won't work correct there
     def preorder(self, node: Node, action: str) -> None:
 
         if node:
@@ -106,11 +112,20 @@ class Trie:
 
                     else:
                         self._prefix_leaf_nodes[node.depth] += 1
-                else:
+
+                if action is "generate":
                     self._generate_prefix(node)
 
             self.preorder(node.left_child, action)
             self.preorder(node.right_child, action)
+
+    # TODO
+    def get_depths(self, level):
+        return [key for key in self._prefix_leaf_nodes.keys() if key < level]
+
+    # TODO: Just for testing propose. Simulate generating a prefixes with other rules
+    def _generate_prefix_tmp(self, node):
+        pass
 
     def _generate_prefix(self, node: Node) -> None:
         """
