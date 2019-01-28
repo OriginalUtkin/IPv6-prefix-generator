@@ -36,6 +36,22 @@ def validate_prefix_quantity(value):
     return value
 
 
+def parse_depth_distribution(value):
+
+    parsed = value.split(',')
+    result = {key: 0 for key in range(64)}
+
+    for value in parsed:
+        separated_value = value.split(':')
+
+        if int(separated_value[0]) > 63:
+            raise ValueError("Value of depth cannot be greater than 63")
+
+        result[int(separated_value[0])] = int(separated_value[1])
+
+    return result
+
+
 def validate_rgr(value):
     """
 
@@ -120,7 +136,7 @@ def parse_args():
                                                                         " to be generated")
 
     # TODO: add validator
-    parser.add_argument('--depth-distribution', required=True, help="Defines a distribution by depth")
+    parser.add_argument('--depth_distribution', required=True, type=parse_depth_distribution, help="Defines a distribution by depth")
 
 
     # # TODO : ????
@@ -143,7 +159,7 @@ if __name__ == "__main__":
 
     generator = V6Generator(prefix_quantity=parsed_arguments['prefix_quantity'],
                             rgr=parsed_arguments['rgr'],
-                            depth_distribution=parsed_arguments['depth-distribution'],
+                            depth_distribution=parsed_arguments['depth_distribution'],
                             input_prefixes=input_prefixes)
 
     new_prefixes = generator.start_generating()

@@ -34,6 +34,9 @@ class V6Generator:
         for prefix in self.input_prefixes:
             self._binary_trie.add_node(self._get_binary_prefix(prefix))
 
+        # Set leaf nodes in binary trie
+        self._binary_trie.preorder(self._binary_trie.root_node, "statistic")
+
         # Calculate number of prefixes that will be generated randomly (without using the seed prefix trie)
         self._randomly_generated_prefixes = int(float(self.prefix_quantity) * self.rgr / 100)
 
@@ -44,6 +47,7 @@ class V6Generator:
         self._check_depth_distribution()
 
     def start_generating(self):
+        print("Generating prefixes. Bghghghghhghg")
         # TODO
         # first phase of generating based on binary trie
         pass
@@ -83,21 +87,23 @@ class V6Generator:
             if depth < 0:
                 raise ValueError("Level value can't be less than zero")
 
-            if current_value is None:  # level doesn't exist in trie
+            if current_value is None:  # depth doesn't exist in trie
+                # Set number of prefixes on this depth as 0
                 current_value = 0
-                new_prefixes_num += prefixes_num
 
+            # input distribution contains less prefixes than already are in trie on the same depth
             if prefixes_num - current_value < 0:
                 raise ValueError("Number of prefixes on generated depth can't be less than current ")
 
+            # no leaf nodes for generating new prefixes for current depth
             if prefixes_num - current_value > 0 and not self._binary_trie.get_depths(depth):
                 raise ValueError(f"There is no leaf prefixes in trie for generate new prefixes on {depth} depth")
 
+            # calculate number of prefixes which should be generated for current depth
             new_prefixes_num += prefixes_num - current_value
 
         if new_prefixes_num > self.prefix_quantity:
             raise ValueError("Generated prefixes num is greater than expected")
-
 
 def random_generate(number_of_prefixes):
 
