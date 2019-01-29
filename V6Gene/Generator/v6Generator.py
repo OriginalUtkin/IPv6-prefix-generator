@@ -1,6 +1,7 @@
 import random
 import attr
 import ipaddress
+import matplotlib.pyplot as plt
 
 from V6Gene.Trie import Trie
 from typing import Dict
@@ -73,6 +74,14 @@ class V6Generator:
 
         return binary_prefix[:parsed_address['length']]
 
+    # TODO: Remove this code
+    def test_trie(self):
+        # Create new trie here
+        self._binary_trie.preorder(self._binary_trie.root_node, "statistic")
+        self._randomly_generated_prefixes = int(float(self.prefix_quantity) * self.rgr / 100)
+        self._generated_traversing_trie = self.prefix_quantity - self._randomly_generated_prefixes
+        self._check_depth_distribution()
+
     def _check_depth_distribution(self):
         # Number of new prefixes depends on :param new_dept_distribution
         new_prefixes_num = 0
@@ -105,26 +114,41 @@ class V6Generator:
         if new_prefixes_num > self.prefix_quantity:
             raise ValueError("Generated prefixes num is greater than expected")
 
-def random_generate(number_of_prefixes):
+    def random_generate(self, number_of_prefixes):
 
-    IANA = '0010'
+        IANA = '0010'
 
-    for counter in range(number_of_prefixes):
-        # Generate other bits for LIR
-        generated_part = random.getrandbits(28)
-        binary_repr = IANA + format(generated_part, '0' + str(28) + 'b')
+        for counter in range(number_of_prefixes):
+            # Generate other bits for LIR
+            generated_part = random.getrandbits(28)
+            binary_repr = IANA + format(generated_part, '0' + str(28) + 'b')
 
-        print(f'New prefix is {binary_to_hex(binary_repr)} with len {len(binary_repr)}')
-        # TODO : Generate other prefixes for ISP and EU after LIR
+            print(f'New prefix is {self.binary_to_hex(binary_repr)} with len {len(binary_repr)}')
+            # TODO : Generate other prefixes for ISP and EU after LIR
 
+    def binary_to_hex(self, binary_representation):
+        # TODO: In progress
+        tt = [hex(int(binary_representation[i:i+4], 2))[-1] for i in range(0, len(binary_representation), 4)]
+        hex_rep = "".join(tt)
 
-def binary_to_hex(binary_representation):
-    # TODO: In progress
-    tt = [hex(int(binary_representation[i:i+4], 2))[-1] for i in range(0, len(binary_representation), 4)]
-    hex_rep = "".join(tt)
+        return hex_rep
 
-    return hex_rep
+    def create_depth_distributing_graph(self):
+        x = []
 
+        for p_len in self._binary_trie.prefix_nodes.keys():
+            x.append(p_len + 1)
 
-if __name__ == '__main__':
-    random_generate(2)
+        x_pos = x
+
+        prefix_num = list(self._binary_trie.prefix_nodes.values())
+
+        plt.bar(x_pos, prefix_num, align='center')
+
+        plt.xlabel("Prefix length")
+        plt.ylabel("Number of prefixes")
+        plt.title("Depth distribution before generating")
+
+        plt.xticks(x_pos, x)
+
+        plt.savefig("distributing_before_generating.png")

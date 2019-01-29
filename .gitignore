@@ -67,3 +67,11 @@ venv/
 # some test files
 polygon.py
 input.dms
+
+# output graphs
+*.png
+*.jpg
+*.gif
+
+# input and test files
+*.dms
