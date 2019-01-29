@@ -72,6 +72,7 @@ input.dms
 *.png
 *.jpg
 *.gif
+graphs/
 
 # input and test files
 *.dms
