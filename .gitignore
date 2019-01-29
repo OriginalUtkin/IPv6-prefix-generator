@@ -69,10 +69,7 @@ polygon.py
 input.dms
 
 # output graphs
-*.png
-*.jpg
-*.gif
-graphs/
+V6Gene/graphs/*.svg
 
 # input and test files
 *.dms

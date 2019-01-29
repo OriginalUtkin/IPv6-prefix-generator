@@ -67,7 +67,7 @@ class V6Generator:
         # TODO remove redundant prefixes and call second phase if needed
         # control final result
 
-        self.create_depth_distributing_graph("graphs/depth_distributing_after_generating.svg")
+        self.create_depth_distributing_graph("depth_distributing_after_generating.svg")
 
     def _get_binary_prefix(self, prefix_string: str) -> str:
         """
