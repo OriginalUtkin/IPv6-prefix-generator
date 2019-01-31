@@ -56,6 +56,7 @@ class V6Generator:
 
         # Create a distributing plan
         self._create_distributing_plan()
+        self._binary_trie.distribution_plan = self._distribution_plan
 
         # Create output graphs
         self.create_depth_distributing_graph("depth_distributing_before_generating.svg")
