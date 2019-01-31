@@ -156,7 +156,6 @@ if __name__ == "__main__":
         raise TypeError("Output file doesn't exist or is not writable")
 
     input_prefixes = read_seed_file(parsed_arguments['input'])
-
     generator = V6Generator(prefix_quantity=parsed_arguments['prefix_quantity'],
                             rgr=parsed_arguments['rgr'],
                             depth_distribution=parsed_arguments['depth_distribution'],

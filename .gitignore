@@ -66,7 +66,7 @@ venv/
 
 # some test files
 polygon.py
-input.dms
+v6Gene/input.dms
 
 # output graphs
 V6Gene/graphs/*.svg

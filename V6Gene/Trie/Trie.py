@@ -13,9 +13,12 @@ class Trie:
     _prefix_leaf_nodes = attr.ib(factory=dict, type=dict)
     _prefix_nodes = attr.ib(factory=dict, type=dict)
 
+    _intervals = {0: [11, 31], 1: [31, 47], 2: [47, 63], 3: [63, 64]}
+
     def __attrs_post_init__(self):
         for value in range(64):
             self._prefix_nodes[value] = 0
+            self._prefix_leaf_nodes[value] = 0
 
     @property
     def generated_prefixes(self) -> List:
@@ -51,6 +54,10 @@ class Trie:
         :return: dictionary; dict in format {depth: num. prefixes nodes}
         """
         return {key: value for key, value in self._prefix_nodes.items() if value > 0}
+
+    @property
+    def full_prefix_nodes(self):
+        return self._prefix_nodes
 
     def set_root_as_prefix(self) -> None:
         """Set prefix flag for root node.
@@ -103,10 +110,9 @@ class Trie:
         if node:
             # print(node.node_value)
 
-            if not node.left_child and not node.right_child:  # We found a leaf node
+            if node and not node.left_child and not node.right_child and node.prefix_flag:  # We found a leaf node
 
                 if action is "statistic":
-
                     if not self._prefix_leaf_nodes.get(node.depth):
                         self._prefix_leaf_nodes[node.depth] = 1
 
@@ -119,6 +125,7 @@ class Trie:
             self.preorder(node.left_child, action)
             self.preorder(node.right_child, action)
 
+
     # TODO: refactor
     def get_depths(self, level):
         return [key for key in self._prefix_leaf_nodes.keys() if key < level]
@@ -126,6 +133,8 @@ class Trie:
     # TODO: Just for testing propose. Simulate generating a prefixes with other rules
     def _generate_prefix_tmp(self, node):
         pass
+
+
 
     def _generate_prefix(self, node: Node) -> None:
         """
