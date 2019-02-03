@@ -4,6 +4,7 @@ import ipaddress
 import matplotlib.pyplot as plt
 
 from V6Gene.Trie import Trie
+from V6Gene.Generator.Helper import Helper
 from typing import Dict
 
 # 6) Generate random prefixes
@@ -16,20 +17,12 @@ class V6Generator:
     rgr = attr.ib(type=float)
     depth_distribution = attr.ib(factory=dict, type=Dict)
     input_prefixes = attr.ib(factory=list, type=list)
+    Help = attr.ib(default=Helper(), type=Helper)
 
     # Parameters for generating
     _binary_trie = attr.ib(default=Trie.Trie(), type=Trie)
     _randomly_generated_prefixes = attr.ib(default=0, type=int)
     _generated_traversing_trie = attr.ib(default=0, type=int)
-
-    _distribution_plan = [
-        {'interval': [11, 31], 'generated_info': {}},
-        {'interval': [31, 47], 'generated_info': {}},
-        {'interval': [47, 63], 'generated_info': {}},
-        {'interval': [63, 64], 'generated_info': {}}
-    ]
-
-
 
     # Result prefixes
     _generated_prefixes_list = attr.ib(factory=list, type=list)
@@ -54,16 +47,18 @@ class V6Generator:
         # Check if generating based on depth parameter is even possible
         self._check_depth_distribution()
 
-        # Create a distributing plan
-        self._create_distributing_plan()
-        self._binary_trie.distribution_plan = self._distribution_plan
-
-        self._binary_trie.generating_strategy = self._get_leafs_by_level()
+        # Initialize helper class
+        self.help_init()
+        self._binary_trie.Help = self.Help
 
         # Create output graphs
         self.create_depth_distributing_graph("depth_distributing_before_generating.svg")
 
-
+    def help_init(self):
+        self.Help.start_depth_distribution = self._binary_trie.full_prefix_nodes
+        self.Help.final_depth_distribution = self.depth_distribution
+        self.Help.create_distributing_plan()
+        self.Help.create_distributing_strategy(self._binary_trie.prefix_leaf_nodes)
 
     def __str__(self) -> str:
         """Represent class as string.
@@ -76,20 +71,7 @@ class V6Generator:
 
     def start_generating(self):
         # TODO
-        print(f"leafs {self._group_by_length(self._binary_trie.prefix_leaf_nodes)}")
         self._binary_trie.preorder(self._binary_trie.root_node, "generate")
-        print(f"After generating {self._binary_trie.prefix_nodes}")
-
-
-
-        # TODO
-        # second phase of generating - random generating
-
-        # TODO remove redundant prefixes and call second phase if necessary
-        # check final result
-
-        self.create_depth_distributing_graph("depth_distributing_after_generating.svg")
-
 
         # TODO
         # second phase of generating - random generating
@@ -133,7 +115,12 @@ class V6Generator:
 
         return hex_rep
 
-    def create_depth_distributing_graph(self, graph_name):
+    def create_depth_distributing_graph(self, graph_name) -> None:
+        """Create inputs and outputs graphs.
+
+        :param graph_name: string; name of graph
+        :return: None
+        """
         x = []
 
         for p_len in self._binary_trie.prefix_nodes.keys():
@@ -148,18 +135,22 @@ class V6Generator:
         plt.title("Depth distribution before generating", fontweight='bold')
 
         plt.xticks([i for i in range(max(x)+1)])
-        plt.yticks([i for i in range(50)])
+        plt.yticks([i for i in range(100)])
 
         plt.savefig('graphs/' + graph_name, format='svg', dpi=1200)
 
-    def _check_depth_distribution(self):
-        # Number of new prefixes depends on :param new_dept_distribution
+    def _check_depth_distribution(self) -> None:
+        """Check input parameter depth distribution.
+        Check input parameter and control if generating is even possible
+
+        :return: None
+        """
         new_prefixes_num = 0
 
-        initiate_distribution = self._group_by_length(self._binary_trie.full_prefix_nodes)  # dictionary statistic from previous function
-        final_distribution = self._group_by_length(self.depth_distribution)
+        initiate_distribution = self.Help.group_by_length(self._binary_trie.full_prefix_nodes)  # dictionary statistic from previous function
+        final_distribution = self.Help.group_by_length(self.depth_distribution)
 
-        print(self._group_by_length(self._binary_trie.prefix_leaf_nodes))
+        print(self.Help.group_by_length(self._binary_trie.prefix_leaf_nodes))
 
         for i in range(len(initiate_distribution)):
             try:
@@ -180,7 +171,7 @@ class V6Generator:
                 # If req. for generating exists, need to check if leaf prefixes on previous level are enough for
                 # generating new prefixes
                 # number of prefix leafs on previous organisation level
-                prefix_leafs = self._group_by_length(self._binary_trie.prefix_leaf_nodes)
+                prefix_leafs = self.Help.group_by_length(self._binary_trie.prefix_leaf_nodes)
                 prev_organisation_lvl = prefix_leafs[i - 1]['prefixes_num']
 
                 # # If not enough -> error
@@ -219,99 +210,3 @@ class V6Generator:
 
         if new_prefixes_num > self.prefix_quantity:
             raise ValueError("Generated prefixes num is greater than expected")
-
-    def _group_by_length(self, distribution):
-
-        statistic = [
-            {'interval': [11, 31], 'prefixes_num': 0},
-            {'interval': [31, 47], 'prefixes_num': 0},
-            {'interval': [47, 63], 'prefixes_num': 0},
-            {'interval': [63, 64], 'prefixes_num': 0}
-        ]
-
-        for i in range(len(statistic)):
-
-            prefixes_in_depth = 0
-
-            for j in range(statistic[i]['interval'][0], statistic[i]['interval'][1]):
-                prefixes_in_depth += distribution.get(j, 0)
-
-            statistic[i]['prefixes_num'] = prefixes_in_depth
-
-        return statistic
-
-    def _create_distributing_plan(self):
-        """Initialize distribution plan variable.
-        :return:
-        """
-        for key, value in self.depth_distribution.items():
-
-            prefix_num = value - self._binary_trie.prefix_nodes.get(key, 0)
-
-            if prefix_num == 0:
-                continue
-            else:
-                for i in range(len(self._distribution_plan)):
-                    if self._distribution_plan[i]['interval'][0] <= key < self._distribution_plan[i]['interval'][1]:
-                        self._distribution_plan[i]['generated_info'][key] = prefix_num
-
-    def _get_leafs_by_level(self):
-
-        leaf_prefixes = self._group_by_length(self._binary_trie.prefix_leaf_nodes)
-
-        leaf_distribution_plan = [
-            {'interval': [11, 31], 'generating_strategy': None},
-            {'interval': [31, 47], 'generating_strategy': None},
-            {'interval': [47, 63], 'generating_strategy': None},
-            {'interval': [63, 64], 'generating_strategy': None}
-        ]
-
-        for i in range(len(self._distribution_plan)):
-
-            # cannot generate from leaf nodes with len eq 64
-            if i == len(self._distribution_plan) - 1:
-                break
-
-            # nothing to to
-            if not self._distribution_plan[i+1]['generated_info']:
-                continue
-
-            new_prefixes = 0
-            leafs = leaf_prefixes[i]['prefixes_num']
-
-            for prefixes_num in self._distribution_plan[i+1]['generated_info'].values():
-                new_prefixes += prefixes_num
-
-            # calculate how many prefixes will be generated from nodes on this level
-            test = float(new_prefixes / leafs)
-
-            # number of leaf prefixes the same as number of prefixes on following organisation level
-            if test == 1:
-                print("case 1")
-                leaf_distribution_plan[i]['generating_strategy'] = [1 for _ in range(leafs)]
-
-                continue
-
-            # Just one leaf prefix on previous organisation level
-            if test == new_prefixes:
-                print("case OLOLOLOLO")
-                leaf_distribution_plan[i]['generating_strategy'] = [new_prefixes]
-
-                continue
-
-            if test > 1:
-                print("case 2")
-                tmp = [int(test) for _ in range(leafs - 1)]
-                tmp.append(new_prefixes - len(tmp)*int(test))
-                leaf_distribution_plan[i]['generating_strategy'] = tmp
-
-                continue
-
-            if test < 1:
-                print("case 3")
-                leaf_distribution_plan[i]['generating_strategy'] = [1 for _ in range(new_prefixes)]
-
-                continue
-
-        return leaf_distribution_plan
-
