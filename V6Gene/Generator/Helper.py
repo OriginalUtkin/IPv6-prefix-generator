@@ -1,5 +1,6 @@
 from typing import Dict, List
 import attr
+import random
 
 
 class Helper:
@@ -155,3 +156,25 @@ class Helper:
             statistic[i]['prefixes_num'] = prefixes_in_depth
 
         return statistic
+
+    @staticmethod
+    def generate_new_bits(current_prefix_depth: int, new_prefix_depth: int) -> str:
+        """
+
+        :param current_prefix_depth:
+        :param new_prefix_depth:
+        :return:
+        """
+        generate_num = new_prefix_depth - current_prefix_depth
+
+        generated_sequence = random.getrandbits(generate_num)
+
+        binary_rep = ("{0:b}".format(generated_sequence))
+
+        if len(binary_rep) < generate_num:
+            additional_bits = generate_num - len(binary_rep)
+
+            for i in range(additional_bits):
+                binary_rep = '0' + binary_rep
+
+        return binary_rep

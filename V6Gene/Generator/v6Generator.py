@@ -116,7 +116,7 @@ class V6Generator:
         return hex_rep
 
     def create_depth_distributing_graph(self, graph_name) -> None:
-        """Create inputs and outputs graphs.
+        """Create inputs and outputs graphs using current state of binary trie.
 
         :param graph_name: string; name of graph
         :return: None
@@ -199,7 +199,7 @@ class V6Generator:
 
             # input distribution contains less prefixes than already are in trie on the same depth
             if prefixes_num - current_value < 0:
-                raise ValueError("Number of prefixes on generated depth can't be less than current ")
+                raise ValueError("Number of prefixes on generated depth can't be less than current number")
 
             # no leaf nodes for generating new prefixes for current depth
             if prefixes_num - current_value > 0 and not self._binary_trie.get_depths(depth):
