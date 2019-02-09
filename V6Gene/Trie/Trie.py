@@ -8,8 +8,8 @@ from typing import Union, Dict, List
 
 @attr.s
 class Trie:
-
     root_node = attr.ib(default=Node(None, 0), type=Node)
+    max_possible_level = attr.ib(default=7, type=int)
 
     _max_trie_level = attr.ib(default=0, type=int)
     _generated_prefixes = attr.ib(factory=list, type=list)
@@ -27,6 +27,9 @@ class Trie:
         for value in range(64):
             self._prefix_nodes[value] = 0
             self._prefix_leaf_nodes[value] = 0
+
+        for value in range(6):
+            self._level_distribution[value] = 0
 
     @property
     def trie_level(self):
