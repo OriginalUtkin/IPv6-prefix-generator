@@ -10,10 +10,14 @@ from typing import Union, Dict, List
 class Trie:
 
     root_node = attr.ib(default=Node(None, 0), type=Node)
+
+    _max_trie_level = attr.ib(default=0, type=int)
     _generated_prefixes = attr.ib(factory=list, type=list)
     _trie_depth = attr.ib(default=0, type=int)
     _prefix_leaf_nodes = attr.ib(factory=dict, type=dict)
     _prefix_nodes = attr.ib(factory=dict, type=dict)
+    _level_distribution = attr.ib(factory=dict, type=dict)
+
     Help = attr.ib(default=None, type=Helper)
 
     names = ['A', 'B','C','D','E','F','G','H', 'K', 'L', 'M', 'N']
@@ -23,6 +27,10 @@ class Trie:
         for value in range(64):
             self._prefix_nodes[value] = 0
             self._prefix_leaf_nodes[value] = 0
+
+    @property
+    def trie_level(self):
+        return self._max_trie_level
 
     @property
     def generated_prefixes(self) -> List:
@@ -71,7 +79,7 @@ class Trie:
         self.root_node.prefix_flag = True
         self._prefix_nodes[0] += 1
 
-    def add_node(self, node_value: str, parent_node: Union[None, Node] = None, allow_generating: bool = True) -> None:
+    def add_node(self, node_value: str, parent_node: Union[None, Node] = None, allow_generating: bool = True) -> Node:
         """
 
         :param node_value: string; string representation of node
@@ -83,14 +91,21 @@ class Trie:
             current_node = self.root_node
         else:
             current_node = parent_node
+        path = []
 
         for bit in node_value:
+
+            if current_node.level > self._max_trie_level:
+                self._max_trie_level = current_node.level
 
             if bit == '0':
 
                 # add node to trie as a left child
                 if not current_node.left_child:
                     current_node.left_child = Node(bit, current_node.depth + 1)
+
+                if current_node.prefix_flag:
+                    path.append(current_node)
 
                 current_node = current_node.left_child
 
@@ -100,7 +115,13 @@ class Trie:
                 if not current_node.right_child:
                     current_node.right_child = Node(bit, current_node.depth + 1)
 
+                if current_node.prefix_flag:
+                    path.append(current_node)
+
                 current_node = current_node.right_child
+
+        if path:
+            self.recalculate_level(path)
 
         current_node.prefix_flag = True
         self._prefix_nodes[current_node.depth] += 1
@@ -111,10 +132,18 @@ class Trie:
         if current_node.depth > self._trie_depth:
             self._trie_depth = current_node.depth
 
+        return current_node
+
     def preorder(self, node: Node, action: str) -> None:
 
         if node:
-            # print(node.node_value)
+
+            if action is "statistic":
+                if not self._level_distribution.get(node.level):
+                    self._level_distribution[node.level] = 1
+
+                else:
+                    self._level_distribution[node.level]+=1
 
             if node and not node.left_child and not node.right_child and node.prefix_flag:  # We found a leaf node
 
@@ -127,7 +156,7 @@ class Trie:
                         self._prefix_leaf_nodes[node.depth] += 1
 
                     node.name = self.names[self.added]
-                    self.added+=1
+                    self.added += 1
 
                 if action is "generate" and node.allow_generate:
                     self._generate_prefix(node)
@@ -184,3 +213,20 @@ class Trie:
                 self.Help.decrease_plan_value(prefix_depth_level+1, prefix_depth)
 
             self.add_node(new_bits, node, False)
+
+    def recalculate_level(self, path: List):
+
+        for i in range(len(path)-1, -1, -1):
+
+            # adding new child to leaf
+            if i == len(path) - 1:
+                if path[i].level == 0:
+                    path[i].level = 1
+
+                else:
+                    continue
+
+            # adding new child to node, which already has child
+            else:
+                if path[i].level < path[i + 1].level + 1:
+                    path[i].level += 1

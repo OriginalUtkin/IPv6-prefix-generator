@@ -1,12 +1,14 @@
 from typing import Dict, List
 import attr
 import random
+import ipaddress
 
 
 class Helper:
 
     start_depth_distribution = attr.ib(factory=dict, type=dict)
     final_depth_distribution = attr.ib(factory=dict, type=dict)
+    leafs_prefixes = attr.ib(factory=dict, type=dict)
 
     _intervals = {0: [11, 31], 1: [31, 47], 2: [47, 63], 3: [63, 64]}
 
@@ -17,12 +19,46 @@ class Helper:
         {'interval': [63, 64], 'generated_info': {}}
     ]
 
+    distribution_random_plan = [
+        {'interval': [11, 31], 'prefixes_num': {}},
+        {'interval': [31, 47], 'prefixes_num': {}},
+        {'interval': [47, 63], 'prefixes_num': {}},
+        {'interval': [63, 64], 'prefixes_num': {}}
+    ]
+
     generating_strategy = [
         {'interval': [11, 31], 'generating_strategy': None},
         {'interval': [31, 47], 'generating_strategy': None},
         {'interval': [47, 63], 'generating_strategy': None},
         {'interval': [63, 64], 'generating_strategy': None}
     ]
+
+    def create_distributing_plan(self):
+        """Initialize distribution plan variable.
+        :return: None
+        """
+        for prefix_depth, prefix_num in self.final_depth_distribution.items():
+
+            new_prefix_num = prefix_num - self.start_depth_distribution.get(prefix_depth, 0)
+
+            # the number of prefixes the same as at the start
+            if new_prefix_num == 0:
+                continue
+
+            else:
+                org_lvl = self.get_organisation_level_by_depth(prefix_depth)
+
+                if org_lvl == 0:
+                    self.distribution_random_plan[org_lvl]['generated_info'][prefix_depth] = new_prefix_num
+
+                else:
+                    leafs_distribution = self.group_by_length(self.leafs_prefixes)
+
+                    if leafs_distribution[org_lvl - 1]['prefixes_num'] != 0:
+                        self.distribution_plan[org_lvl]['generated_info'][prefix_depth] = new_prefix_num
+
+                    else:
+                        self.distribution_random_plan[org_lvl]['generated_info'] = new_prefix_num
 
     def get_organisation_level_by_depth(self, node_depth: int) -> int:
         """Return organisation depth level for particular depth
@@ -65,21 +101,6 @@ class Helper:
 
     def decrease_plan_value(self, prefix_depth_level, prefix_depth):
         self.distribution_plan[prefix_depth_level]['generated_info'][prefix_depth] -= 1
-
-    def create_distributing_plan(self):
-        """Initialize distribution plan variable.
-        :return: None
-        """
-        for key, value in self.final_depth_distribution.items():
-
-            prefix_num = value - self.start_depth_distribution.get(key, 0)
-
-            if prefix_num == 0:
-                continue
-            else:
-                for i in range(len(self.distribution_plan)):
-                    if self.distribution_plan[i]['interval'][0] <= key < self.distribution_plan[i]['interval'][1]:
-                        self.distribution_plan[i]['generated_info'][key] = prefix_num
 
     def create_distributing_strategy(self, prefix_leaf_nodes: Dict):
         """Initialize distributing strategy for all organisation levels.
@@ -178,3 +199,18 @@ class Helper:
                 binary_rep = '0' + binary_rep
 
         return binary_rep
+
+    @staticmethod
+    def get_binary_prefix(prefix_string: str) -> str:
+        """
+        :param prefix_string:
+        :return:
+        """
+        parsed_address = {'prefix': prefix_string[:prefix_string.find('/')],
+                          'length': int(prefix_string[prefix_string.find('/') + 1:])}
+
+        hex_prefix = ipaddress.IPv6Address(parsed_address['prefix'])
+
+        binary_prefix = "".join(format(x, '08b') for x in bytearray(hex_prefix.packed))
+
+        return binary_prefix[:parsed_address['length']]
