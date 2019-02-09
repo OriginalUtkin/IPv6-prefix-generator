@@ -143,7 +143,7 @@ class Trie:
         if node:
 
             if action is "statistic" and node.prefix_flag:
-                
+
                 if not self._level_distribution.get(node.level):
                     self._level_distribution[node.level] = 1
 

@@ -52,6 +52,18 @@ def parse_depth_distribution(value):
     return result
 
 
+def parse_level_distribution(value):
+
+    parsed = value.split(',')
+    result = {key: 0 for key in range(7)}
+
+    for value in parsed:
+        separated_value = value.split(':')
+        result[int(separated_value[0])] = int(separated_value[1])
+
+    return result
+
+
 def validate_rgr(value):
     """
 
@@ -135,12 +147,9 @@ def parse_args():
                                                                         "seed prefix file to the number of all prefixes"
                                                                         " to be generated")
 
-    # TODO: add validator
     parser.add_argument('--depth_distribution', required=True, type=parse_depth_distribution, help="Defines a distribution by depth")
 
-
-    # # TODO : ????
-    # parser.add('--level')
+    parser.add_argument('--level', required=True, type=parse_level_distribution, help="Defines distribution by level")
 
     return vars(parser.parse_args())
 
@@ -156,9 +165,13 @@ if __name__ == "__main__":
         raise TypeError("Output file doesn't exist or is not writable")
 
     input_prefixes = read_seed_file(parsed_arguments['input'])
-    generator = V6Generator(prefix_quantity=parsed_arguments['prefix_quantity'],
-                            rgr=parsed_arguments['rgr'],
-                            depth_distribution=parsed_arguments['depth_distribution'],
-                            input_prefixes=input_prefixes)
+
+    generator = V6Generator(
+        prefix_quantity=parsed_arguments['prefix_quantity'],
+        rgr=parsed_arguments['rgr'],
+        depth_distribution=parsed_arguments['depth_distribution'],
+        level_distribution=parsed_arguments['level_distribution'],
+        input_prefixes=input_prefixes
+    )
 
     new_prefixes = generator.start_generating()

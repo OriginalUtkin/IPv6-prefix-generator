@@ -14,6 +14,7 @@ class V6Generator:
     prefix_quantity = attr.ib(type=int)
     rgr = attr.ib(type=float)
     depth_distribution = attr.ib(factory=dict, type=Dict)
+    level_distribution = attr.ib(factory=dict, type=Dict)
     input_prefixes = attr.ib(factory=list, type=list)
     Help = attr.ib(default=Helper(), type=Helper)
 
