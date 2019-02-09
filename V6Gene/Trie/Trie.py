@@ -33,6 +33,10 @@ class Trie:
         return self._max_trie_level
 
     @property
+    def level_distribution(self):
+        return self._level_distribution
+
+    @property
     def generated_prefixes(self) -> List:
         """Return all generated prefixes.
 
@@ -138,14 +142,15 @@ class Trie:
 
         if node:
 
-            if action is "statistic":
+            if action is "statistic" and node.prefix_flag:
+                
                 if not self._level_distribution.get(node.level):
                     self._level_distribution[node.level] = 1
 
                 else:
-                    self._level_distribution[node.level]+=1
+                    self._level_distribution[node.level] += 1
 
-            if node and not node.left_child and not node.right_child and node.prefix_flag:  # We found a leaf node
+            if node.left_child and not node.right_child and node.prefix_flag:  # We found a leaf node
 
                 if action is "statistic":
 
