@@ -14,7 +14,7 @@ class Node:
     prefix_flag = attr.ib(default=False, type=bool)
     allow_generate = attr.ib(default=True, type=bool)
     level = attr.ib(default=0, type=int)
-    is_visited = attr.ib(default=False, type=bool)
+    path = attr.ib(default=None)
     name = attr.ib(default=None, type=str)
 
     @node_value.validator

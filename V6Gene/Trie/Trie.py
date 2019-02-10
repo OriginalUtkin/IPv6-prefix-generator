@@ -134,11 +134,13 @@ class Trie:
                 current_node = current_node.right_child
 
         if path:
+            current_node.path = path[-1]
+
             if not allow_generating:
-                self.recalculate_level(path, phase='Generaiting')
+                self.recalculate_level(current_node.path, phase='Generaiting')
 
             else:
-                self.recalculate_level(path)
+                self.recalculate_level(current_node)
 
         current_node.prefix_flag = True
         self._prefix_nodes[current_node.depth] += 1
@@ -181,6 +183,8 @@ class Trie:
 
             self.preorder(node.left_child, action)
             self.preorder(node.right_child, action)
+
+
 
     # TODO: refactor
     def get_depths(self, level):
@@ -232,7 +236,17 @@ class Trie:
 
             self.add_node(new_bits, node, False)
 
-    def recalculate_level(self, path: List[Node], phase='Creating'):
+    def get_full_path(self, node: Node):
+        full_path = []
+        curr = node.path
+
+        while curr:
+            full_path.append(curr)
+            curr = curr.path
+
+        return full_path[::-1]
+
+    def recalculate_level(self, node: Node, phase='Creating'):
         """Recalculate level all parent and sub-parent prefixes after adding new leaf prefix to binary trie.
         Separated into two phases:
         1) Creating phase- means creating binary trie using seed prefix file. At this moment, no info about max possible
@@ -247,22 +261,26 @@ class Trie:
         :param phase: string;
         :return: None
         """
+        # print(f"node path func {node.path}")
+
+        full_path = self.get_full_path(node)
+        # print(full_path)
         if phase is 'Creating':
             print("Recalculating while creating")
 
-            self.recalculating_process(path)
+            self.recalculating_process(full_path)
 
-        if phase is 'Generaiting':
-            print("Recalculating while generating")
-
-            tmp_path = [i.level for i in path]
-            self.recalculating_process_tmp(tmp_path)
-
-            max_level = max(tmp_path, key=int)
-            if max_level > self.max_possible_level:
-                raise ValueError("Level after generate new prefix is greater than max possible trie level")
-
-            self.recalculating_process(path)
+        # if phase is 'Generaiting':
+        #     print("Recalculating while generating")
+        #
+        #     tmp_path = [i.level for i in path]
+        #     self.recalculating_process_tmp(tmp_path)
+        #
+        #     max_level = max(tmp_path, key=int)
+        #     if max_level > self.max_possible_level:
+        #         raise ValueError("Level after generate new prefix is greater than max possible trie level")
+        #
+        #     self.recalculating_process(path)
 
     def recalculating_process(self, path):
         # TODO: change function logic for using it in generating phase
