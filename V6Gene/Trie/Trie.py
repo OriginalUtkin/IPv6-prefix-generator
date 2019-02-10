@@ -81,7 +81,7 @@ class Trie:
 
     @property
     def init_max_level(self):
-        return max(self._max_trie_level, key=int)
+        return max(self._level_distribution, key=int)
 
     def set_root_as_prefix(self) -> None:
         """Set prefix flag for root node.
@@ -163,7 +163,7 @@ class Trie:
                 else:
                     self._level_distribution[node.level] += 1
 
-            if node.left_child and not node.right_child and node.prefix_flag:  # We found a leaf node
+            if not node.left_child and not node.right_child and node.prefix_flag:  # We found a leaf node
 
                 if action is "statistic":
 
@@ -248,13 +248,17 @@ class Trie:
         :return: None
         """
         if phase is 'Creating':
+            print("Recalculating while creating")
+
             self.recalculating_process(path)
 
         if phase is 'Generaiting':
-            tmp_path = [i.level for i in path]
-            self.recalculating_process(tmp_path)
-            max_level = max(tmp_path, key=int)
+            print("Recalculating while generating")
 
+            tmp_path = [i.level for i in path]
+            self.recalculating_process_tmp(tmp_path)
+
+            max_level = max(tmp_path, key=int)
             if max_level > self.max_possible_level:
                 raise ValueError("Level after generate new prefix is greater than max possible trie level")
 
@@ -276,3 +280,20 @@ class Trie:
             else:
                 if path[i].level < path[i + 1].level + 1:
                     path[i].level += 1
+
+    def recalculating_process_tmp(self, path):
+        # TODO: change function logic for using it in generating phase
+        for i in range(len(path)-1, -1, -1):
+
+            # adding new child to leaf
+            if i == len(path) - 1:
+                if path[i] == 0:
+                    path[i] = 1
+
+                else:
+                    continue
+
+            # adding new child to node, which already has child
+            else:
+                if path[i] < path[i + 1] + 1:
+                    path[i] += 1

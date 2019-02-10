@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 
 from V6Gene.Trie import Trie
 from V6Gene.Generator.Helper import Helper
+from V6Gene.Generator.RandomGenerator import RandomGenerator
 from typing import Dict
 
 # 6) Generate random prefixes
@@ -58,15 +59,27 @@ class V6Generator:
     def help_init(self):
         self.Help.start_depth_distribution = self._binary_trie.full_prefix_nodes
         self.Help.final_depth_distribution = self.depth_distribution
+        self.Help.leafs_prefixes = self._binary_trie.prefix_leaf_nodes
+
         self.Help.create_distributing_plan()
         self.Help.create_distributing_strategy(self._binary_trie.prefix_leaf_nodes)
 
     def start_generating(self):
         # TODO
+        print(f"level before generaiting: {self._binary_trie._max_trie_level}")
+        print(f"TRIE TRAVERSAL prefixes: {self._generated_traversing_trie}")
+        print(f"RANDOM prefixes: {self._randomly_generated_prefixes}")
+        print(f"RANDOM PLAN -> {Helper.distribution_random_plan}")
         self._binary_trie.preorder(self._binary_trie.root_node, "generate")
+        print(f"level after generaiting: {self._binary_trie._max_trie_level}")
+
+
+        # TODO: put all print here for testing
 
         # TODO
         # second phase of generating - random generating
+        Randomizer = RandomGenerator(distribution_plan=Helper.distribution_random_plan)
+        Randomizer.random_generate()
 
         # TODO remove redundant prefixes and call second phase if necessary
         # check final result
@@ -127,22 +140,26 @@ class V6Generator:
             if new_prefixes_num < 0:
                 raise ValueError(f"Cannot delete prefixes from {i} level")
 
-            # RIR level and RIR already exists in trie
-            if i == 0 and initiate_distribution[i]['prefix_num'] != 0:
-                if new_prefixes_num >= tmp_random:
+            # RIR level and RIR already exists in trie -> Random
+            if i == 0 and new_prefixes_num != 0:
+                if new_prefixes_num <= tmp_random:
                     tmp_random -= new_prefixes_num
+
+                    # TODO: create random plan
                     continue
                 else:
                     raise ValueError(f"Cannot generate prefixes on  depth level {i}")
             else:
                 # If exists some leafs nodes on previous depth level -> prefixes will be generated from them
-                if self.Help.group_by_length(self._binary_trie.prefix_leaf_nodes)[i-1] > 0:
+                print(f"LEAFS -> {self.Help.group_by_length(self._binary_trie.prefix_leaf_nodes)[i-1]}")
+                if self.Help.group_by_length(self._binary_trie.prefix_leaf_nodes)[i-1]['prefixes_num'] > 0:
                     continue
 
                 # No leafs. Look if we can generate this prefixes in random process
                 else:
-                    if initiate_distribution[i]['prefix_num'] != 0 and new_prefixes_num >= tmp_random:
+                    if initiate_distribution[i]['prefixes_num'] != 0 and new_prefixes_num <= tmp_random:
                         tmp_random -= new_prefixes_num
+                        # TODO: create random plan
                         continue
                     else:
                         raise ValueError(f"Cannot generate prefixes on  depth level {i}")
@@ -181,7 +198,7 @@ class V6Generator:
             trie_prefixes = self._binary_trie.level_distribution.get(level)
 
             if trie_prefixes > prefixes_num:
-                raise ValueError("Number of prefixes on generated level can't be less than current number")
+                raise ValueError(f"Number of prefixes on generated level {level} can't be less than current number")
 
     def _max_level(self):
         return max(self.level_distribution, key=int)

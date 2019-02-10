@@ -55,7 +55,7 @@ def parse_depth_distribution(value):
 def parse_level_distribution(value):
 
     parsed = value.split(',')
-    result = {key: 0 for key in range(7)}
+    result = {key: 0 for key in range(6)}
 
     for value in parsed:
         separated_value = value.split(':')
@@ -149,7 +149,7 @@ def parse_args():
 
     parser.add_argument('--depth_distribution', required=True, type=parse_depth_distribution, help="Defines a distribution by depth")
 
-    parser.add_argument('--level', required=True, type=parse_level_distribution, help="Defines distribution by level")
+    parser.add_argument('--level_distribution', required=True, type=parse_level_distribution, help="Defines distribution by level")
 
     return vars(parser.parse_args())
 

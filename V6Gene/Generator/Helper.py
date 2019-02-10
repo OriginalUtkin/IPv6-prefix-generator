@@ -20,10 +20,10 @@ class Helper:
     ]
 
     distribution_random_plan = [
-        {'interval': [11, 31], 'prefixes_num': {}},
-        {'interval': [31, 47], 'prefixes_num': {}},
-        {'interval': [47, 63], 'prefixes_num': {}},
-        {'interval': [63, 64], 'prefixes_num': {}}
+        {'interval': [11, 31], 'generated_info': {}},
+        {'interval': [31, 47], 'generated_info': {}},
+        {'interval': [47, 63], 'generated_info': {}},
+        {'interval': [63, 64], 'generated_info': {}}
     ]
 
     generating_strategy = [
