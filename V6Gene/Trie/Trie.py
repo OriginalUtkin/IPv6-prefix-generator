@@ -11,6 +11,7 @@ class Trie:
     root_node = attr.ib(default=Node(None, 0), type=Node)
     max_possible_level = attr.ib(default=7, type=int)
 
+    _init_max_level = attr.ib(default=0, type=int)
     _max_trie_level = attr.ib(default=0, type=int)
     _generated_prefixes = attr.ib(factory=list, type=list)
     _trie_depth = attr.ib(default=0, type=int)
@@ -78,6 +79,10 @@ class Trie:
     def full_prefix_nodes(self):
         return self._prefix_nodes
 
+    @property
+    def init_max_level(self):
+        return max(self._max_trie_level, key=int)
+
     def set_root_as_prefix(self) -> None:
         """Set prefix flag for root node.
 
@@ -98,6 +103,7 @@ class Trie:
             current_node = self.root_node
         else:
             current_node = parent_node
+
         path = []
 
         for bit in node_value:
@@ -128,7 +134,11 @@ class Trie:
                 current_node = current_node.right_child
 
         if path:
-            self.recalculate_level(path)
+            if not allow_generating:
+                self.recalculate_level(path, phase='Generaiting')
+
+            else:
+                self.recalculate_level(path)
 
         current_node.prefix_flag = True
         self._prefix_nodes[current_node.depth] += 1
@@ -222,8 +232,36 @@ class Trie:
 
             self.add_node(new_bits, node, False)
 
-    def recalculate_level(self, path: List):
+    def recalculate_level(self, path: List[Node], phase='Creating'):
+        """Recalculate level all parent and sub-parent prefixes after adding new leaf prefix to binary trie.
+        Separated into two phases:
+        1) Creating phase- means creating binary trie using seed prefix file. At this moment, no info about max possible
+        level for trie. levels are calculated and automatically applied for all nodes in :param path
 
+        2)Generating phase - trie has info about max possible level from input parameter level_distribution. In this
+        case, all nodes levels are stored in temporary structure. At first, need to check if after adding new node to
+        binary trie all prefixes in :param path structure have level less or equal to max_possible_level. If so, new
+        node can be added to binary trie. Else function will raise exception
+
+        :param path: list with node objects;
+        :param phase: string;
+        :return: None
+        """
+        if phase is 'Creating':
+            self.recalculating_process(path)
+
+        if phase is 'Generaiting':
+            tmp_path = [i.level for i in path]
+            self.recalculating_process(tmp_path)
+            max_level = max(tmp_path, key=int)
+
+            if max_level > self.max_possible_level:
+                raise ValueError("Level after generate new prefix is greater than max possible trie level")
+
+            self.recalculating_process(path)
+
+    def recalculating_process(self, path):
+        # TODO: change function logic for using it in generating phase
         for i in range(len(path)-1, -1, -1):
 
             # adding new child to leaf

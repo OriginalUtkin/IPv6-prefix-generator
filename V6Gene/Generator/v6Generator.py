@@ -171,6 +171,12 @@ class V6Generator:
             raise ValueError("Generated prefixes num is greater than expected")
 
     def _check_level_distribution(self):
+        if self._binary_trie.init_max_level > self._max_level():
+            raise ValueError("Current max trie level more than max lvl from level distribution parameter")
+
+        # if self._binary_trie.init_max_level == self._max_level():
+        #     raise ValueError("Current max trie level is already equal to max lvl from level distribution param. Generating isn't possible")
+
         for level, prefixes_num in self.level_distribution.items():
             trie_prefixes = self._binary_trie.level_distribution.get(level)
 
