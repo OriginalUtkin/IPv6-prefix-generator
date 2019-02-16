@@ -89,7 +89,10 @@ class Trie:
         self._prefix_nodes[0] += 1
 
     def add_node(self, node_value: str, parent_node: Union[None, Node] = None, allow_generating: bool = True) -> Node:
-        """
+        """Add new node to binary trie.
+
+        :exception  ValueError in case if new node already exists in binary trie
+        :exception  ValueError in case if after adding a new node to binary trie level changes and greater than max possible value
 
         :param node_value: string; string representation of node
         :param parent_node None or Node; node object which represent the parent for added node
@@ -103,13 +106,16 @@ class Trie:
 
         path = []
 
-        for bit in node_value:
+        for curr_len, bit in enumerate(node_value, 1):
 
             if current_node.level > self._max_trie_level:
                 self._max_trie_level = current_node.level
 
             if bit == '0':
                 # add node to trie as a left child
+                if curr_len == len(node_value) and current_node.left_child:
+                    raise ValueError("Value already exists in binary trie")
+
                 if not current_node.left_child:
                     current_node.left_child = Node(bit, current_node.depth + 1)
 
@@ -120,6 +126,9 @@ class Trie:
 
             else:
                 # add node to trie as a right child
+                if curr_len == len(node_value) and current_node.right_child:
+                    raise ValueError("Value already exists in binary trie")
+
                 if not current_node.right_child:
                     current_node.right_child = Node(bit, current_node.depth + 1)
 
@@ -131,11 +140,17 @@ class Trie:
         if path:
             current_node.path = path[-1]
 
-            if not allow_generating:
-                self.recalculate_level(current_node.path, phase='Generating')
+            # TODO: catch exception if new binary trie level is greater than possible
+            try:
+                if not allow_generating:
+                    self.recalculate_level(current_node.path, phase='Generating')
 
-            else:
-                self.recalculate_level(current_node)
+                else:
+                    self.recalculate_level(current_node)
+
+            except ValueError:
+                # TODO: delete pointer to new bits
+                raise
 
         current_node.prefix_flag = True
         self._prefix_nodes[current_node.depth] += 1
@@ -224,6 +239,7 @@ class Trie:
                 print(f"!!!!JUST Generate prefix!!!!!")
                 self.Help.decrease_plan_value(prefix_depth_level+1, prefix_depth)
 
+            # TODO catch possible exceptions and regenerate prefixes
             self.add_node(new_bits, node, False)
 
     def get_full_path(self, node: Node, include_current=False):

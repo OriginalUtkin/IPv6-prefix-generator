@@ -9,7 +9,6 @@ class RandomGenerator:
 
     def random_generate(self):
         IANA = '0010'
-        result = []
 
         for org_level in self.distribution_plan:
             org_level_plan = org_level['generated_info']
@@ -19,4 +18,5 @@ class RandomGenerator:
                     # First 4 bits will be IANA part
                     new_bits = Helper.generate_new_bits(4, prefix_len)
                     new_prefix = IANA + new_bits
+                    # TODO catch possible exceptions and regenerate prefixes
                     self.binary_trie.add_node(new_prefix, allow_generating=False)
