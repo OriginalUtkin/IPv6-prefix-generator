@@ -109,7 +109,6 @@ class Trie:
                 self._max_trie_level = current_node.level
 
             if bit == '0':
-                # TODO: len calculating doesnt work for nodes which added from other nodes (not from root)
                 # add node to trie as a left child
                 if not current_node.left_child:
                     current_node.left_child = Node(bit, current_node.depth + 1)
@@ -120,7 +119,6 @@ class Trie:
                 current_node = current_node.left_child
 
             else:
-
                 # add node to trie as a right child
                 if not current_node.right_child:
                     current_node.right_child = Node(bit, current_node.depth + 1)
@@ -177,47 +175,6 @@ class Trie:
 
             self.preorder(node.left_child, action)
             self.preorder(node.right_child, action)
-
-    def iterativePreorder(self, root: Node):
-        self._prefix_nodes = {}
-        self._level_distribution = {}
-        # Base CAse
-        if root is None:
-            return
-
-            # create an empty stack and push root to it
-        nodeStack = []
-        nodeStack.append(root)
-
-        #  Pop all items one by one. Do following for every popped item
-        #   a) print it
-        #   b) push its right child
-        #   c) push its left child
-        # Note that right child is pushed first so that left
-        # is processed first */
-        while (len(nodeStack) > 0):
-
-            # Pop the top item from stack and print it
-            node = nodeStack.pop()
-            if node.prefix_flag:
-                if not self._level_distribution.get(node.level):
-                    self._level_distribution[node.level] = 1
-                else:
-                    self._level_distribution[node.level] += 1
-
-                if not self._prefix_nodes.get(node.depth):
-                    self._prefix_nodes[node.depth] = 1
-
-                else:
-                    self._prefix_nodes[node.depth] += 1
-
-
-            # Push right and left children of the popped node
-            # to stack
-            if node.right_child is not None:
-                nodeStack.append(node.right_child)
-            if node.left_child is not None:
-                nodeStack.append(node.left_child)
 
     # TODO: refactor
     def get_depths(self, level):

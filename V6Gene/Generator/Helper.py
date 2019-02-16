@@ -12,6 +12,7 @@ class Helper:
 
     _intervals = {0: [12, 32], 1: [32, 48], 2: [48, 64], 3: [64, 65]}
 
+    # Helper structure which contains a number of prefixes on organisation levels for trie traversal generating process
     distribution_plan = [
         {'interval': [12, 32], 'generated_info': {}},
         {'interval': [32, 48], 'generated_info': {}},
@@ -19,6 +20,7 @@ class Helper:
         {'interval': [64, 65], 'generated_info': {}}
     ]
 
+    # Helper structure which contains a number of prefixes on organisation levels for random generating process
     distribution_random_plan = [
         {'interval': [12, 32], 'generated_info': {}},
         {'interval': [32, 48], 'generated_info': {}},
@@ -26,6 +28,7 @@ class Helper:
         {'interval': [64, 65], 'generated_info': {}}
     ]
 
+    # Generating strategy which contains number of prefixes which will be generated from prefix node in trie traversal generating process
     generating_strategy = [
         {'interval': [12, 32], 'generating_strategy': None},
         {'interval': [32, 48], 'generating_strategy': None},
@@ -33,7 +36,7 @@ class Helper:
         {'interval': [64, 65], 'generating_strategy': None}
     ]
 
-    def create_distributing_plan(self):
+    def create_distributing_plan(self) -> None:
         """Initialize distribution plan variable.
         :return: None
         """
@@ -61,7 +64,7 @@ class Helper:
                         self.distribution_random_plan[org_lvl]['generated_info'] = new_prefix_num
 
     def get_organisation_level_by_depth(self, node_depth: int) -> int:
-        """Return organisation depth level for particular depth
+        """Return organisation depth level for particular depth.
 
         :param node_depth: integer; depth of current node
         :return: integer which represents a organisation depth level
@@ -102,7 +105,7 @@ class Helper:
     def decrease_plan_value(self, prefix_depth_level, prefix_depth):
         self.distribution_plan[prefix_depth_level]['generated_info'][prefix_depth] -= 1
 
-    def create_distributing_strategy(self, prefix_leaf_nodes: Dict):
+    def create_distributing_strategy(self, prefix_leaf_nodes: Dict) -> None:
         """Initialize distributing strategy for all organisation levels.
 
         :param prefix_leaf_nodes: Dictionary; dictionary in format {depth: number of leaf nodes}
@@ -180,11 +183,11 @@ class Helper:
 
     @staticmethod
     def generate_new_bits(current_prefix_depth: int, new_prefix_depth: int) -> str:
-        """
+        """Generate new random bits for current prefix.
 
-        :param current_prefix_depth:
-        :param new_prefix_depth:
-        :return:
+        :param current_prefix_depth: integer; current prefix len in trie
+        :param new_prefix_depth: integer; new prefix len which is needed
+        :return: string; new generated bits (0 and 1) in string form
         """
         generate_num = new_prefix_depth - current_prefix_depth
 
@@ -202,9 +205,10 @@ class Helper:
 
     @staticmethod
     def get_binary_prefix(prefix_string: str) -> str:
-        """
-        :param prefix_string:
-        :return:
+        """Convert hexadecimal prefix representation to binary representation.
+
+        :param prefix_string: string; string contains hexadecimal representation of prefix
+        :return: string; binary representation of current prefix without additional 0 at the end
         """
         parsed_address = {'prefix': prefix_string[:prefix_string.find('/')],
                           'length': int(prefix_string[prefix_string.find('/') + 1:])}

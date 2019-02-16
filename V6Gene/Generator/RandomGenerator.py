@@ -3,7 +3,7 @@ from V6Gene.Generator.Helper import Helper
 from V6Gene.Trie import Trie
 
 @attr.s
-class RandomGenerator():
+class RandomGenerator:
     binary_trie = attr.ib(type=Trie)
     distribution_plan = attr.ib(factory=dict, type=dict)
 
