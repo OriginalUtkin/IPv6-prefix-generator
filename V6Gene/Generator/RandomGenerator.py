@@ -2,6 +2,7 @@ import attr
 from V6Gene.Generator.Helper import Helper
 from V6Gene.Trie import Trie
 
+
 @attr.s
 class RandomGenerator:
     binary_trie = attr.ib(type=Trie)
@@ -16,7 +17,13 @@ class RandomGenerator:
             for prefix_len, prefix_num in org_level_plan.items():
                 for count in range(prefix_num):
                     # First 4 bits will be IANA part
-                    new_bits = Helper.generate_new_bits(4, prefix_len)
-                    new_prefix = IANA + new_bits
-                    # TODO catch possible exceptions and regenerate prefixes
-                    self.binary_trie.add_node(new_prefix, allow_generating=False)
+                    while True:
+                        try:
+                            new_bits = Helper.generate_new_bits(4, prefix_len)
+                            new_prefix = IANA + new_bits
+                            self.binary_trie.add_node(new_prefix, allow_generating=False)
+
+                            break
+
+                        except ValueError:
+                            continue
