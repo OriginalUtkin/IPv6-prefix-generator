@@ -37,15 +37,14 @@ def validate_prefix_quantity(value):
 
 
 def parse_depth_distribution(value):
-
     parsed = value.split(',')
-    result = {key: 0 for key in range(64)}
+    result = {key: 0 for key in range(65)}
 
     for value in parsed:
         separated_value = value.split(':')
 
-        if int(separated_value[0]) > 63:
-            raise ValueError("Value of depth cannot be greater than 63")
+        if int(separated_value[0]) > 64:
+            raise ValueError("Value of depth cannot be greater than 64")
 
         result[int(separated_value[0])] = int(separated_value[1])
 
@@ -113,7 +112,7 @@ def read_seed_file(seed_file):
                 prefix_len = int(separated_line[1])
 
                 # prefix value belongs to the interval <0, 64>
-                if prefix_len < 0 or prefix_len > 64:
+                if prefix_len < 1 or prefix_len > 64:
                     continue
 
                 verified_addresses.append(address)

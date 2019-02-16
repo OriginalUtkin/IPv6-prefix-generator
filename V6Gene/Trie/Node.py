@@ -15,6 +15,7 @@ class Node:
     allow_generate = attr.ib(default=True, type=bool)
     level = attr.ib(default=0, type=int)
     path = attr.ib(default=None)
+    is_visited = attr.ib(default=False, type=bool)
     name = attr.ib(default=None, type=str)
 
     @node_value.validator

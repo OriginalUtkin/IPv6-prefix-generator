@@ -21,11 +21,8 @@ class Trie:
 
     Help = attr.ib(default=None, type=Helper)
 
-    names = ['A', 'B','C','D','E','F','G','H', 'K', 'L', 'M', 'N']
-    added=0
-
     def __attrs_post_init__(self):
-        for value in range(64):
+        for value in range(65):
             self._prefix_nodes[value] = 0
             self._prefix_leaf_nodes[value] = 0
 
@@ -112,7 +109,7 @@ class Trie:
                 self._max_trie_level = current_node.level
 
             if bit == '0':
-
+                # TODO: len calculating doesnt work for nodes which added from other nodes (not from root)
                 # add node to trie as a left child
                 if not current_node.left_child:
                     current_node.left_child = Node(bit, current_node.depth + 1)
@@ -137,7 +134,7 @@ class Trie:
             current_node.path = path[-1]
 
             if not allow_generating:
-                self.recalculate_level(current_node.path, phase='Generaiting')
+                self.recalculate_level(current_node.path, phase='Generating')
 
             else:
                 self.recalculate_level(current_node)
@@ -175,16 +172,52 @@ class Trie:
                     else:
                         self._prefix_leaf_nodes[node.depth] += 1
 
-                    node.name = self.names[self.added]
-                    self.added += 1
-
                 if action is "generate" and node.allow_generate:
                     self._generate_prefix(node)
 
             self.preorder(node.left_child, action)
             self.preorder(node.right_child, action)
 
+    def iterativePreorder(self, root: Node):
+        self._prefix_nodes = {}
+        self._level_distribution = {}
+        # Base CAse
+        if root is None:
+            return
 
+            # create an empty stack and push root to it
+        nodeStack = []
+        nodeStack.append(root)
+
+        #  Pop all items one by one. Do following for every popped item
+        #   a) print it
+        #   b) push its right child
+        #   c) push its left child
+        # Note that right child is pushed first so that left
+        # is processed first */
+        while (len(nodeStack) > 0):
+
+            # Pop the top item from stack and print it
+            node = nodeStack.pop()
+            if node.prefix_flag:
+                if not self._level_distribution.get(node.level):
+                    self._level_distribution[node.level] = 1
+                else:
+                    self._level_distribution[node.level] += 1
+
+                if not self._prefix_nodes.get(node.depth):
+                    self._prefix_nodes[node.depth] = 1
+
+                else:
+                    self._prefix_nodes[node.depth] += 1
+
+
+            # Push right and left children of the popped node
+            # to stack
+            if node.right_child is not None:
+                nodeStack.append(node.right_child)
+            if node.left_child is not None:
+                nodeStack.append(node.left_child)
 
     # TODO: refactor
     def get_depths(self, level):
@@ -236,8 +269,12 @@ class Trie:
 
             self.add_node(new_bits, node, False)
 
-    def get_full_path(self, node: Node):
+    def get_full_path(self, node: Node, include_current=False):
         full_path = []
+
+        if include_current:
+            full_path.append(node)
+
         curr = node.path
 
         while curr:
@@ -257,30 +294,29 @@ class Trie:
         binary trie all prefixes in :param path structure have level less or equal to max_possible_level. If so, new
         node can be added to binary trie. Else function will raise exception
 
-        :param path: list with node objects;
-        :param phase: string;
+        :param node: Node; added node to trie
+        :param phase: string; currently generator phase
         :return: None
         """
-        # print(f"node path func {node.path}")
 
-        full_path = self.get_full_path(node)
-        # print(full_path)
         if phase is 'Creating':
+            full_path = self.get_full_path(node)
             print("Recalculating while creating")
 
             self.recalculating_process(full_path)
 
-        # if phase is 'Generaiting':
-        #     print("Recalculating while generating")
-        #
-        #     tmp_path = [i.level for i in path]
-        #     self.recalculating_process_tmp(tmp_path)
-        #
-        #     max_level = max(tmp_path, key=int)
-        #     if max_level > self.max_possible_level:
-        #         raise ValueError("Level after generate new prefix is greater than max possible trie level")
-        #
-        #     self.recalculating_process(path)
+        if phase is 'Generating':
+            full_path = self.get_full_path(node, include_current=True)
+            print("Recalculating while generating")
+
+            tmp_path = [i.level for i in full_path]
+            self.recalculating_process_tmp(tmp_path)
+
+            max_level = max(tmp_path, key=int)
+            if max_level > self.max_possible_level:
+                raise ValueError("Level after generate new prefix is greater than max possible trie level")
+
+            self.recalculating_process(full_path)
 
     def recalculating_process(self, path):
         # TODO: change function logic for using it in generating phase
@@ -315,3 +351,37 @@ class Trie:
             else:
                 if path[i] < path[i + 1] + 1:
                     path[i] += 1
+
+    def print_path(self, s):
+        return ''.join([i.node_value for i in s if i.node_value])
+
+    def path(self, node: Node):
+        all_path = []
+        if node is None:
+            return
+
+        s = []
+        s.append(node)
+
+        tmp = node.left_child
+
+        while s:
+            while tmp:
+                s.append(tmp)
+                tmp = tmp.left_child
+
+            top = s[-1]
+            if top.prefix_flag:
+                all_path.append(self.print_path(s))
+
+            if not top.is_visited:
+                top.is_visited = True
+                tmp = top.right_child
+
+                if tmp is None and top.right_child is None and top.left_child is None:
+                    all_path.append(self.print_path(s))
+                    s.pop()
+            else:
+                s.pop()
+
+        return all_path

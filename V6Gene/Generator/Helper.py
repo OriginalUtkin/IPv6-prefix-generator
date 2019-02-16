@@ -10,27 +10,27 @@ class Helper:
     final_depth_distribution = attr.ib(factory=dict, type=dict)
     leafs_prefixes = attr.ib(factory=dict, type=dict)
 
-    _intervals = {0: [11, 31], 1: [31, 47], 2: [47, 63], 3: [63, 64]}
+    _intervals = {0: [12, 32], 1: [32, 48], 2: [48, 64], 3: [64, 65]}
 
     distribution_plan = [
-        {'interval': [11, 31], 'generated_info': {}},
-        {'interval': [31, 47], 'generated_info': {}},
-        {'interval': [47, 63], 'generated_info': {}},
-        {'interval': [63, 64], 'generated_info': {}}
+        {'interval': [12, 32], 'generated_info': {}},
+        {'interval': [32, 48], 'generated_info': {}},
+        {'interval': [48, 64], 'generated_info': {}},
+        {'interval': [64, 65], 'generated_info': {}}
     ]
 
     distribution_random_plan = [
-        {'interval': [11, 31], 'generated_info': {}},
-        {'interval': [31, 47], 'generated_info': {}},
-        {'interval': [47, 63], 'generated_info': {}},
-        {'interval': [63, 64], 'generated_info': {}}
+        {'interval': [12, 32], 'generated_info': {}},
+        {'interval': [32, 48], 'generated_info': {}},
+        {'interval': [48, 64], 'generated_info': {}},
+        {'interval': [64, 65], 'generated_info': {}}
     ]
 
     generating_strategy = [
-        {'interval': [11, 31], 'generating_strategy': None},
-        {'interval': [31, 47], 'generating_strategy': None},
-        {'interval': [47, 63], 'generating_strategy': None},
-        {'interval': [63, 64], 'generating_strategy': None}
+        {'interval': [12, 32], 'generating_strategy': None},
+        {'interval': [32, 48], 'generating_strategy': None},
+        {'interval': [48, 64], 'generating_strategy': None},
+        {'interval': [64, 65], 'generating_strategy': None}
     ]
 
     def create_distributing_plan(self):
@@ -161,10 +161,10 @@ class Helper:
     def group_by_length(self, distribution: Dict) -> List:
 
         statistic = [
-            {'interval': [11, 31], 'prefixes_num': 0},
-            {'interval': [31, 47], 'prefixes_num': 0},
-            {'interval': [47, 63], 'prefixes_num': 0},
-            {'interval': [63, 64], 'prefixes_num': 0}
+            {'interval': [12, 32], 'prefixes_num': 0},
+            {'interval': [32, 48], 'prefixes_num': 0},
+            {'interval': [48, 64], 'prefixes_num': 0},
+            {'interval': [64, 65], 'prefixes_num': 0}
         ]
 
         for i in range(len(statistic)):

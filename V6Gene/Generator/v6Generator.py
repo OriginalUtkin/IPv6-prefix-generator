@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from V6Gene.Trie import Trie
 from V6Gene.Generator.Helper import Helper
 from V6Gene.Generator.RandomGenerator import RandomGenerator
+from V6Gene.Generator.Converter import Converter
 from typing import Dict
 
 # 6) Generate random prefixes
@@ -66,25 +67,35 @@ class V6Generator:
 
     def start_generating(self):
         # TODO
-        print(f"level before generaiting: {self._binary_trie._max_trie_level}")
-        print(f"TRIE TRAVERSAL prefixes: {self._generated_traversing_trie}")
-        print(f"RANDOM prefixes: {self._randomly_generated_prefixes}")
-        print(f"RANDOM PLAN -> {Helper.distribution_random_plan}")
+        # print(f"level before generaiting: {self._binary_trie._max_trie_level}")
+        # print(f"TRIE TRAVERSAL prefixes: {self._generated_traversing_trie}")
+        # print(f"RANDOM prefixes: {self._randomly_generated_prefixes}")
+        # print(f"RANDOM PLAN -> {Helper.distribution_random_plan}")
+        print(f"start number of prefixes ===> {self._binary_trie.prefix_nodes}")
         self._binary_trie.preorder(self._binary_trie.root_node, "generate")
-        print(f"level after generaiting: {self._binary_trie._max_trie_level}")
+        # print(f"level after generaiting: {self._binary_trie._max_trie_level}")
 
 
         # TODO: put all print here for testing
 
         # TODO
         # second phase of generating - random generating
-        Randomizer = RandomGenerator(distribution_plan=Helper.distribution_random_plan)
+        Randomizer = RandomGenerator(self._binary_trie, distribution_plan=Helper.distribution_random_plan)
         Randomizer.random_generate()
+
+        new_prefixes = set(self._binary_trie.path(self._binary_trie.root_node))
+
+        output_converter = Converter(new_prefixes)
+        converted_prefixes = output_converter.convert_prefixes()
+
+        for prefix in converted_prefixes:
+            print(prefix)
+
 
         # TODO remove redundant prefixes and call second phase if necessary
         # check final result
 
-        self.create_depth_distributing_graph("depth_distributing_after_generating.svg")
+        # self.create_depth_distributing_graph("depth_distributing_after_generating.svg")
 
     def create_depth_distributing_graph(self, graph_name) -> None:
         """Create inputs and outputs graphs using current state of binary trie.
@@ -144,8 +155,6 @@ class V6Generator:
             if i == 0 and new_prefixes_num != 0:
                 if new_prefixes_num <= tmp_random:
                     tmp_random -= new_prefixes_num
-
-                    # TODO: create random plan
                     continue
                 else:
                     raise ValueError(f"Cannot generate prefixes on  depth level {i}")
@@ -159,7 +168,6 @@ class V6Generator:
                 else:
                     if initiate_distribution[i]['prefixes_num'] != 0 and new_prefixes_num <= tmp_random:
                         tmp_random -= new_prefixes_num
-                        # TODO: create random plan
                         continue
                     else:
                         raise ValueError(f"Cannot generate prefixes on  depth level {i}")
