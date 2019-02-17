@@ -149,7 +149,6 @@ class Trie:
                     self.recalculate_level(current_node)
 
             except MaximumLevelException:
-                # TODO: delete pointer to new child
                 raise
 
         current_node.prefix_flag = True
@@ -227,7 +226,7 @@ class Trie:
 
             # get number of prefixes
             values = self.Help.get_plan_values(prefix_depth_level+1, prefix_depth)
-        
+
             while True:
                 try:
                     new_bits = Helper.generate_new_bits(node.depth, prefix_depth)
@@ -246,7 +245,14 @@ class Trie:
                 print(f"!!!!JUST Generate prefix!!!!!")
                 self.Help.decrease_plan_value(prefix_depth_level+1, prefix_depth)
 
-    def get_full_path(self, node: Node, include_current=False):
+    def get_full_path(self, node: Node, include_current=False) -> List:
+        """Return full prefix nodes path for current node.
+
+        Method is used for creating prefix path for current :param node and recalculate level for previous nodes.
+        :param node: Node; node object from binary trie
+        :param include_current: boolean; Signalize if current node will be added to full prefix nodes path.
+        :return: list; list with all previous (and current if include flag is set as True) prefix nodes for :param node
+        """
         full_path = []
 
         if include_current:
@@ -291,6 +297,8 @@ class Trie:
 
             max_level = max(tmp_path, key=int)
             if max_level > self.max_possible_level:
+                full_path[-1].left_child = None
+                full_path[-1].righ_child = None
                 raise MaximumLevelException("Level after generate new prefix is greater than max possible trie level")
 
             self.recalculating_process(full_path)
