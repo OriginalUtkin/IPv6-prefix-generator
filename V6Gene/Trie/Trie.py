@@ -79,7 +79,14 @@ class Trie:
 
     @property
     def init_max_level(self):
-        return max(self._level_distribution, key=int)
+
+        max_level = 0
+
+        for key in self._level_distribution.keys():
+            if self._level_distribution[key] != 0 and key > max_level:
+                max_level = key
+
+        return max_level
 
     def set_root_as_prefix(self) -> None:
         """Set prefix flag for root node.
@@ -296,9 +303,11 @@ class Trie:
             self.recalculating_process_tmp(tmp_path)
 
             max_level = max(tmp_path, key=int)
+
             if max_level > self.max_possible_level:
                 full_path[-1].left_child = None
                 full_path[-1].righ_child = None
+
                 raise MaximumLevelException("Level after generate new prefix is greater than max possible trie level")
 
             self.recalculating_process(full_path)

@@ -199,4 +199,10 @@ class V6Generator:
                 raise ValueError(f"Number of prefixes on generated level {level} can't be less than current number")
 
     def _max_level(self):
-        return max(self.level_distribution, key=int)
+        max_level = 0
+
+        for key in self.level_distribution.keys():
+            if self.level_distribution[key] != 0 and key > max_level:
+                max_level = key
+
+        return max_level
