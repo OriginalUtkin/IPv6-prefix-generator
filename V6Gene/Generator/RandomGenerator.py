@@ -1,6 +1,7 @@
 import attr
 from V6Gene.Generator.Helper import Helper
 from V6Gene.Trie import Trie
+from V6Gene.Exceptions.Exceptions import PrefixAlreadyExists, MaximumLevelException
 
 
 @attr.s
@@ -16,14 +17,14 @@ class RandomGenerator:
 
             for prefix_len, prefix_num in org_level_plan.items():
                 for count in range(prefix_num):
-                    # First 4 bits will be IANA part
                     while True:
                         try:
+                            # First 4 bits will be IANA part
                             new_bits = Helper.generate_new_bits(4, prefix_len)
                             new_prefix = IANA + new_bits
                             self.binary_trie.add_node(new_prefix, allow_generating=False)
 
                             break
 
-                        except ValueError:
+                        except (PrefixAlreadyExists, MaximumLevelException):
                             continue

@@ -7,8 +7,6 @@ from V6Gene.Generator.RandomGenerator import RandomGenerator
 from V6Gene.Generator.Converter import Converter
 from typing import Dict
 
-# 6) Generate random prefixes
-
 
 @attr.s
 class V6Generator:
@@ -75,10 +73,6 @@ class V6Generator:
         self._binary_trie.preorder(self._binary_trie.root_node, "generate")
         # print(f"level after generaiting: {self._binary_trie._max_trie_level}")
 
-
-        # TODO: put all print here for testing
-
-        # TODO
         # second phase of generating - random generating
         Randomizer = RandomGenerator(self._binary_trie, distribution_plan=Helper.distribution_random_plan)
         Randomizer.random_generate()
@@ -90,10 +84,6 @@ class V6Generator:
 
         for prefix in converted_prefixes:
             print(prefix)
-
-
-        # TODO remove redundant prefixes and call second phase if necessary
-        # check final result
 
         # self.create_depth_distributing_graph("depth_distributing_after_generating.svg")
 
