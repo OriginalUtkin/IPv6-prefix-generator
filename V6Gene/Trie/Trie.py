@@ -4,7 +4,7 @@ from V6Gene.Trie.Node import Node
 from V6Gene.Generator.Helper import Helper
 from V6Gene.Exceptions.Exceptions import PrefixAlreadyExists, MaximumLevelException
 
-from typing import Union, Dict, List
+from typing import Dict, List, Optional
 
 
 @attr.s
@@ -89,11 +89,11 @@ class Trie:
         self.root_node.prefix_flag = True
         self._prefix_nodes[0] += 1
 
-    def add_node(self, node_value: str, parent_node: Union[None, Node] = None, allow_generating: bool = True) -> Node:
+    def add_node(self, node_value: str, parent_node: Optional[Node] = None, allow_generating: bool = True) -> Node:
         """Add new node to binary trie.
 
-        :exception  ValueError in case if new node already exists in binary trie
-        :exception  ValueError in case if after adding a new node to binary trie level changes and greater than max possible value
+        :exception  PrefixAlreadyExists in case if new node already exists in binary trie
+        :exception  MaximumLevelException in case if after adding a new node to binary trie level changes and greater than max possible value
 
         :param node_value: string; string representation of node
         :param parent_node None or Node; node object which represent the parent for added node
@@ -115,7 +115,7 @@ class Trie:
             if bit == '0':
                 # add node to trie as a left child
                 if curr_len == len(node_value) and current_node.left_child:
-                    raise ValueError("Value already exists in binary trie")
+                    raise PrefixAlreadyExists("Value already exists in binary trie")
 
                 if not current_node.left_child:
                     current_node.left_child = Node(bit, current_node.depth + 1)
@@ -148,8 +148,8 @@ class Trie:
                 else:
                     self.recalculate_level(current_node)
 
-            except ValueError:
-                # TODO: delete pointer to new bits
+            except MaximumLevelException:
+                # TODO: delete pointer to new child
                 raise
 
         current_node.prefix_flag = True
@@ -191,7 +191,6 @@ class Trie:
             self.preorder(node.left_child, action)
             self.preorder(node.right_child, action)
 
-    # TODO: refactor
     def get_depths(self, level):
         return [key for key in self._prefix_leaf_nodes.keys() if key < level]
 
@@ -228,8 +227,7 @@ class Trie:
 
             # get number of prefixes
             values = self.Help.get_plan_values(prefix_depth_level+1, prefix_depth)
-
-            # TODO catch possible exceptions and regenerate prefixes
+        
             while True:
                 try:
                     new_bits = Helper.generate_new_bits(node.depth, prefix_depth)
