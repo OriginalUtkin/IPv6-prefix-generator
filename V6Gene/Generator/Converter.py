@@ -16,7 +16,7 @@ class Converter:
         :return: dictionary; binary representation of prefix has a len as 128 bits / previous prefix len
         """
         prefix_len = len(prefix)
-        expected_len = 128
+        expected_len = ipaddress.IPV6LENGTH
 
         if prefix_len != expected_len:
             additional_bits = expected_len - prefix_len

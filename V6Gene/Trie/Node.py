@@ -1,11 +1,11 @@
 import attr
 
-from typing import Union
+from typing import Union, Optional
 
 
 @attr.s
 class Node:
-    node_value = attr.ib(type=Union[None, int])
+    node_value = attr.ib(type=Optional[int])
     depth = attr.ib(type=int)
 
     left_child = attr.ib(default=None)
