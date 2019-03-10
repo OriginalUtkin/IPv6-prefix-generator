@@ -58,24 +58,6 @@ class Helper:
     def max_organisation_depth(self) -> int:
         return len(self._intervals) - 1
 
-    def get_plan_keys(self, prefix_depth_level: int) -> List:
-        return list(self.distribution_plan[prefix_depth_level]['generated_info'].keys())
-
-    def get_plan_values(self, prefix_depth_level: int, prefix_depth: int) -> int:
-        return self.distribution_plan[prefix_depth_level]['generated_info'][prefix_depth]
-
-    def remove_from_plan(self, prefix_depth_level: int, prefix_depth: int) -> None:
-        """Remove :param prefix_depth from distribution_plan for particular :param prefix_depth_level
-
-        :param prefix_depth_level: integer; number of organisation depth level of prefix
-        :param prefix_depth: integer; prefix len
-        :return: None
-        """
-        self.distribution_plan[prefix_depth_level]['generated_info'].pop(prefix_depth)
-
-    def decrease_plan_value(self, prefix_depth_level, prefix_depth):
-        self.distribution_plan[prefix_depth_level]['generated_info'][prefix_depth] -= 1
-
     def group_by_length(self, distribution: Dict) -> List:
 
         statistic = [

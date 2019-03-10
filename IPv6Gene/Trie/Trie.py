@@ -44,14 +44,6 @@ class Trie:
         return self._level_distribution
 
     @property
-    def generated_prefixes(self) -> List:
-        """Return all generated prefixes.
-
-        :return: list; list which contains all generated prefixes
-        """
-        return self._generated_prefixes
-
-    @property
     def trie_depth(self) -> int:
         """Return trie depth.
 
@@ -83,14 +75,6 @@ class Trie:
                 max_level = key
 
         return max_level
-
-    def set_root_as_prefix(self) -> None:
-        """Set prefix flag for root node.
-
-        :return: None
-        """
-        self.root_node.prefix_flag = True
-        self._prefix_nodes[0] += 1
 
     def add_node(self, node_value: str, parent_node: Optional[Node] = None, allow_generating: bool = True) -> Node:
         """Add new node to binary trie.
@@ -172,9 +156,9 @@ class Trie:
         return [key for key in self._prefix_leaf_nodes.keys() if key < level]
 
     def generate_prefixes(self) -> None:
-        """
+        """Generate all required prefixes.
 
-        :return:
+        :return: None
         """
         for plan_entry in self.Help.distribution_plan:
 
@@ -189,9 +173,16 @@ class Trie:
                 org_level = self.Help.get_organisation_level_by_depth(new_prefix_len) - 1
                 node_index = random.randint(0, len(self.nodes[org_level]) - 1)
 
-                new_bits = self.Help.generate_new_bits(self.nodes[org_level][node_index].depth, new_prefix_len)
-                added_node = self.add_node(new_bits, self.nodes[org_level][node_index])
-                self.nodes[org_level + 1].append(added_node)
+                while True:
+
+                    try:
+                        new_bits = self.Help.generate_new_bits(self.nodes[org_level][node_index].depth, new_prefix_len)
+                        self.add_node(new_bits, self.nodes[org_level][node_index])
+
+                        break
+
+                    except (PrefixAlreadyExists, MaximumLevelException):
+                        continue
 
                 print(f"Node list len is changed {len(self.nodes[org_level + 1])}")
 

@@ -1,15 +1,28 @@
-Input test parameters:
+# IPv6 generator
 
---depth_distribution 0:0,1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,21:2,22:4,23:0,24:0,25:0,26:0,27:0,28:0,29:0,30:2,31:0,32:3,33:0,34:0,35:1,36:0,37:0,38:0,39:0,40:0,41:0,42:0,43:0,44:0,45:0,46:0,47:0,48:0,49:0,50:0,51:0,52:0,53:0,54:0,55:0,56:0,57:0,58:2,59:0,60:0,61:0,62:0,63:0,64:1
+## Prerequisites
 
---input test.dms
+Python 3.6 (data type annotations and f-strings [more](https://docs.python.org/3/whatsnew/3.6.html))
 
---prefix_quantity 5
+## Installation
+```
+pip install -r requirements.txt
+```
 
---rgr 0.6
+## Built with
+* [Attrs 19.1.0](http://www.attrs.org/en/stable/) - is the Python package that will bring back the joy of writing classes by relieving you from the drudgery of implementing object protocols 
+* [Matplotlib 3.0.3](https://matplotlib.org/3.0.3/index.html) -  is a Python 2D plotting library which produces publication quality figures in a variety of hardcopy formats and interactive environments across platforms
+* [Numpy 1.16.1](http://www.numpy.org) - NumPy is the fundamental package for scientific computing with Python (via Matplotlib)
 
---level_distribution 0:10,1:1,2:0,3:0,4:0,5:0
 
-Level distribution: find maximum level value which has more than 0 prefixes. In case of test parameters -> 1
+## Starting with the project
+1. clone repo
+```
+> git clone https://github.com/OriginalUtkin/IPv6-prefix-generator.git
+```
 
-0:10,1:1,2:0,3:0,4:15,5:0 -> In this case max possible level is set as 4
+2. Create dedicated python virtual env for the project; project is based on python3.6.
+
+3. Activate created env and install requirements (see Installation section)
+
+[More](https://uoa-eresearch.github.io/eresearch-cookbook/recipe/2014/11/26/python-virtual-env/) about virtual environment 
