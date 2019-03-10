@@ -1,4 +1,4 @@
-from V6Gene.Generator.v6Generator import V6Generator
+from IPv6Gene.Generator.v6Generator import V6Generator
 import argparse
 import ipaddress
 import math
@@ -63,34 +63,6 @@ def parse_level_distribution(value):
     return result
 
 
-def validate_rgr(value):
-    """
-
-    :param value:
-    :return:
-    """
-
-    try:
-        value = float(value)
-
-        if value < 0:
-            raise argparse.ArgumentTypeError("RGR value should be a non-negative value")
-
-        if value > 100:
-            raise argparse.ArgumentTypeError("RGR value can't be greater than 100")
-
-        if math.isnan(value) or math.isinf(value):
-            raise argparse.ArgumentTypeError("RGR value is NaN or Inf value")
-
-    except ValueError:
-        raise
-
-    if value < 1:
-        value *= 100
-
-    return value
-
-
 def read_seed_file(seed_file):
     """
 
@@ -141,11 +113,6 @@ def parse_args():
     parser.add_argument('--prefix_quantity', required=True, type=validate_prefix_quantity, help="Defines number of prefixes to "
                                                                                                 "generate. Integer positive value")
 
-    parser.add_argument('--rgr', required=True, type=validate_rgr, help="Defines as the ratio of the number of prefixes"
-                                                                        " to be generated without regarding to the "
-                                                                        "seed prefix file to the number of all prefixes"
-                                                                        " to be generated")
-
     parser.add_argument('--depth_distribution', required=True, type=parse_depth_distribution, help="Defines a distribution by depth")
 
     parser.add_argument('--level_distribution', required=True, type=parse_level_distribution, help="Defines distribution by level")
@@ -167,7 +134,6 @@ if __name__ == "__main__":
 
     generator = V6Generator(
         prefix_quantity=parsed_arguments['prefix_quantity'],
-        rgr=parsed_arguments['rgr'],
         depth_distribution=parsed_arguments['depth_distribution'],
         level_distribution=parsed_arguments['level_distribution'],
         input_prefixes=input_prefixes

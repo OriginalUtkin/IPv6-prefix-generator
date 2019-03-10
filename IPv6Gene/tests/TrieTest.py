@@ -1,5 +1,5 @@
 from V6Gene.Trie import Trie
-from V6Gene.main import get_binary_prefix
+from V6Gene import get_binary_prefix
 import unittest
 
 

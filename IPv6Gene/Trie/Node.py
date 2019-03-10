@@ -12,7 +12,6 @@ class Node:
     right_child = attr.ib(default=None)
 
     prefix_flag = attr.ib(default=False, type=bool)
-    allow_generate = attr.ib(default=True, type=bool)
     level = attr.ib(default=0, type=int)
     path = attr.ib(default=None)
     is_visited = attr.ib(default=False, type=bool)

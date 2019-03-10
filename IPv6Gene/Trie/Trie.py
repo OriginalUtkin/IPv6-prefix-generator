@@ -1,8 +1,9 @@
 import attr
+import random
 
-from V6Gene.Trie.Node import Node
-from V6Gene.Generator.Helper import Helper
-from V6Gene.Exceptions.Exceptions import PrefixAlreadyExists, MaximumLevelException
+from IPv6Gene.Trie.Node import Node
+from IPv6Gene.Generator.Helper import Helper
+from IPv6Gene.Exceptions.Exceptions import PrefixAlreadyExists, MaximumLevelException
 
 from typing import Dict, List, Optional
 
@@ -21,6 +22,10 @@ class Trie:
     _level_distribution = attr.ib(factory=dict, type=dict)
 
     Help = attr.ib(default=None, type=Helper)
+
+    nodes = {
+        0: [], 1: [], 2: [], 3: []
+    }
 
     def __attrs_post_init__(self):
         for value in range(65):
@@ -53,15 +58,6 @@ class Trie:
         :return: int; trie depth
         """
         return self._trie_depth
-
-    @property
-    def prefix_leaf_nodes(self) -> Dict:
-        """Return all leaf prefixes.
-        For set this parameter call a preorder method with :param action as 'statistic'
-
-        :return: dictionary; dict in format {depth: num. leaf node prefixes}
-        """
-        return self._prefix_leaf_nodes
 
     @property
     def prefix_nodes(self) -> Dict:
@@ -167,90 +163,46 @@ class Trie:
         if current_node.depth > self._trie_depth:
             self._trie_depth = current_node.depth
 
+        org_level = self.Help.get_organisation_level_by_depth(current_node.depth)
+        self.nodes[org_level].append(current_node)
+
         return current_node
-
-    def preorder(self, node: Node, action: str) -> None:
-
-        if node:
-
-            if action is "statistic" and node.prefix_flag:
-
-                if not self._level_distribution.get(node.level):
-                    self._level_distribution[node.level] = 1
-
-                else:
-                    self._level_distribution[node.level] += 1
-
-            if not node.left_child and not node.right_child and node.prefix_flag:  # We found a leaf node
-
-                if action is "statistic":
-
-                    if not self._prefix_leaf_nodes.get(node.depth):
-                        self._prefix_leaf_nodes[node.depth] = 1
-
-                    else:
-                        self._prefix_leaf_nodes[node.depth] += 1
-
-                if action is "generate" and node.allow_generate:
-                    self._generate_prefix(node)
-
-            self.preorder(node.left_child, action)
-            self.preorder(node.right_child, action)
 
     def get_depths(self, level):
         return [key for key in self._prefix_leaf_nodes.keys() if key < level]
 
-    def _generate_prefix(self, node: Node):
-        # We have current node depth. Investigate which organisation level is is.
-        # After that, check next level and take some prefix from it.
-        prefix_depth_level = self.Help.get_organisation_level_by_depth(node.depth)
+    def generate_prefixes(self) -> None:
+        """
 
-        # Cannot generate from prefix which has len as 64
-        if prefix_depth_level == self.Help.max_organisation_depth():
-            print(f"Node has len as 64. Skip {prefix_depth_level}")
-            return None
+        :return:
+        """
+        for plan_entry in self.Help.distribution_plan:
 
-        # No prefixes on following depth level
-        if not self.Help.get_dd_plan(prefix_depth_level + 1):
-            print(f"Skip depth {prefix_depth_level}")
-            return None
+            if len(plan_entry["generated_info"]) == 0:
+                continue
 
-        # find out, how many prefixes could be generated from current node
-        number_of_prefixes_from_this_node = self.Help.get_gs(prefix_depth_level)
-        print(f"Start generate from node {node.name} with {node.depth}. Will be generated {number_of_prefixes_from_this_node} prefix")
+            while plan_entry["generated_info"]:
+                new_prefix_len = list(plan_entry["generated_info"].keys())[0]
 
-        for _ in range(number_of_prefixes_from_this_node):
+                print(f"Generaiting {new_prefix_len}")
 
-            # get prefixes length from next organisation depth level which could be generated from current level
-            generated_info_keys = self.Help.get_plan_keys(prefix_depth_level + 1)
+                org_level = self.Help.get_organisation_level_by_depth(new_prefix_len) - 1
+                node_index = random.randint(0, len(self.nodes[org_level]) - 1)
 
-            # No prefixes
-            if not generated_info_keys:
-                return None
+                new_bits = self.Help.generate_new_bits(self.nodes[org_level][node_index].depth, new_prefix_len)
+                added_node = self.add_node(new_bits, self.nodes[org_level][node_index])
+                self.nodes[org_level + 1].append(added_node)
 
-            prefix_depth = generated_info_keys[0]
-            print(f"New prefix will have depth is {prefix_depth}")
+                print(f"Node list len is changed {len(self.nodes[org_level + 1])}")
 
-            # get number of prefixes
-            values = self.Help.get_plan_values(prefix_depth_level+1, prefix_depth)
+                if plan_entry["generated_info"][new_prefix_len] - 1 == 0:
+                    print("Generate and pop element")
+                    del self.Help.distribution_plan[org_level+1]["generated_info"][new_prefix_len]
 
-            while True:
-                try:
-                    new_bits = Helper.generate_new_bits(node.depth, prefix_depth)
-                    self.add_node(new_bits, node, False)
-                    break
-
-                except (PrefixAlreadyExists, MaximumLevelException):
-                    continue
-
-            # generate prefix and decrease number of prefixes which should be generated by one
-            if values - 1 == 0:
-                print(f"!!!!Generate prefix and pop level {prefix_depth}!!!!")
-                self.Help.remove_from_plan(prefix_depth_level+1, prefix_depth)
-
-            else:
-                print(f"!!!!JUST Generate prefix!!!!!")
-                self.Help.decrease_plan_value(prefix_depth_level+1, prefix_depth)
+                else:
+                    print("Generate and decrease number of elements")
+                    curr_values = self.Help.distribution_plan[org_level+1]["generated_info"][new_prefix_len]
+                    self.Help.distribution_plan[org_level + 1]["generated_info"][new_prefix_len] = curr_values - 1
 
     def get_full_path(self, node: Node, include_current=False) -> List:
         """Return full prefix nodes path for current node.

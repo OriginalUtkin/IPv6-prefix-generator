@@ -8,7 +8,6 @@ class Helper:
 
     start_depth_distribution = attr.ib(factory=dict, type=dict)
     final_depth_distribution = attr.ib(factory=dict, type=dict)
-    leafs_prefixes = attr.ib(factory=dict, type=dict)
 
     _intervals = {0: [12, 32], 1: [32, 48], 2: [48, 64], 3: [64, 65]}
 
@@ -23,17 +22,6 @@ class Helper:
     # Helper structure which contains a number of prefixes on organisation levels for random generating process
     distribution_random_plan = [
         {'interval': [12, 32], 'generated_info': {}},
-        {'interval': [32, 48], 'generated_info': {}},
-        {'interval': [48, 64], 'generated_info': {}},
-        {'interval': [64, 65], 'generated_info': {}}
-    ]
-
-    # Generating strategy which contains number of prefixes which will be generated from prefix node in trie traversal generating process
-    generating_strategy = [
-        {'interval': [12, 32], 'generating_strategy': None},
-        {'interval': [32, 48], 'generating_strategy': None},
-        {'interval': [48, 64], 'generating_strategy': None},
-        {'interval': [64, 65], 'generating_strategy': None}
     ]
 
     def create_distributing_plan(self) -> None:
@@ -55,13 +43,7 @@ class Helper:
                     self.distribution_random_plan[org_lvl]['generated_info'][prefix_depth] = new_prefix_num
 
                 else:
-                    leafs_distribution = self.group_by_length(self.leafs_prefixes)
-
-                    if leafs_distribution[org_lvl - 1]['prefixes_num'] != 0:
-                        self.distribution_plan[org_lvl]['generated_info'][prefix_depth] = new_prefix_num
-
-                    else:
-                        self.distribution_random_plan[org_lvl]['generated_info'] = new_prefix_num
+                    self.distribution_plan[org_lvl]['generated_info'][prefix_depth] = new_prefix_num
 
     def get_organisation_level_by_depth(self, node_depth: int) -> int:
         """Return organisation depth level for particular depth.
@@ -75,17 +57,6 @@ class Helper:
 
     def max_organisation_depth(self) -> int:
         return len(self._intervals) - 1
-
-    def get_dd_plan(self, prefix_depth_level: int) -> Dict:
-        return self.distribution_plan[prefix_depth_level]['generated_info']
-
-    def get_gs(self, prefix_depth_level: int) -> int:
-        """Remove and return a generation strategy for :param prefix_depth_level.
-
-        :param prefix_depth_level: integer; organisation depth of prefix
-        :return: integer; number of prefixes which should be generated from current prefix
-        """
-        return self.generating_strategy[prefix_depth_level]['generating_strategy'].pop(0)
 
     def get_plan_keys(self, prefix_depth_level: int) -> List:
         return list(self.distribution_plan[prefix_depth_level]['generated_info'].keys())
@@ -104,62 +75,6 @@ class Helper:
 
     def decrease_plan_value(self, prefix_depth_level, prefix_depth):
         self.distribution_plan[prefix_depth_level]['generated_info'][prefix_depth] -= 1
-
-    def create_distributing_strategy(self, prefix_leaf_nodes: Dict) -> None:
-        """Initialize distributing strategy for all organisation levels.
-
-        :param prefix_leaf_nodes: Dictionary; dictionary in format {depth: number of leaf nodes}
-        :return: None
-        """
-
-        leaf_prefixes = self.group_by_length(prefix_leaf_nodes)
-
-        for i in range(len(self.distribution_plan)):
-
-            # cannot generate from leaf nodes with len eq 64
-            if i == len(self.distribution_plan) - 1:
-                break
-
-            # nothing to to
-            if not self.distribution_plan[i+1]['generated_info']:
-                continue
-
-            new_prefixes = 0
-            leafs = leaf_prefixes[i]['prefixes_num']
-
-            for prefixes_num in self.distribution_plan[i+1]['generated_info'].values():
-                new_prefixes += prefixes_num
-
-            # calculate how many prefixes will be generated from nodes on this level
-            test = float(new_prefixes / leafs)
-
-            # number of leaf prefixes the same as number of prefixes on following organisation level
-            if test == 1:
-                print("case 1")
-                self.generating_strategy[i]['generating_strategy'] = [1 for _ in range(leafs)]
-
-                continue
-
-            # Just one leaf prefix on previous organisation level
-            if test == new_prefixes:
-                print("case 2")
-                self.generating_strategy[i]['generating_strategy'] = [new_prefixes]
-
-                continue
-
-            if test > 1:
-                print("case 3")
-                tmp = [int(test) for _ in range(leafs - 1)]
-                tmp.append(new_prefixes - len(tmp)*int(test))
-                self.generating_strategy[i]['generating_strategy'] = tmp
-
-                continue
-
-            if test < 1:
-                print("case 4")
-                self.generating_strategy[i]['generating_strategy'] = [1 for _ in range(new_prefixes)]
-
-                continue
 
     def group_by_length(self, distribution: Dict) -> List:
 
