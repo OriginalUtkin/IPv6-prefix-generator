@@ -5,3 +5,6 @@ class PrefixAlreadyExists(Exception):
 class MaximumLevelException(Exception):
     pass
 
+
+class CannotGenerateDueMaximumLevel(Exception):
+    pass

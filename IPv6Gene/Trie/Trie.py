@@ -3,7 +3,7 @@ import random
 
 from IPv6Gene.Trie.Node import Node
 from IPv6Gene.Generator.Helper import Helper
-from IPv6Gene.Exceptions.Exceptions import PrefixAlreadyExists, MaximumLevelException
+from IPv6Gene.Exceptions.Exceptions import PrefixAlreadyExists, MaximumLevelException, CannotGenerateDueMaximumLevel
 
 from typing import Dict, List, Optional
 
@@ -76,7 +76,7 @@ class Trie:
 
         return max_level
 
-    def add_node(self, node_value: str, parent_node: Optional[Node] = None, allow_generating: bool = True) -> Node:
+    def add_node(self, node_value: str, parent_node: Optional[Node] = None, creating: bool = True) -> Node:
         """Add new node to binary trie.
 
         :exception  PrefixAlreadyExists in case if new node already exists in binary trie
@@ -84,7 +84,7 @@ class Trie:
 
         :param node_value: string; string representation of node
         :param parent_node None or Node; node object which represent the parent for added node
-        :param allow_generating boolean; allow generating new nodes from added node
+        :param creating boolean; signalize phase of generator when node is added
         :return: None
         """
         if not parent_node:
@@ -129,7 +129,7 @@ class Trie:
             current_node.path = path[-1]
 
             try:
-                if not allow_generating:
+                if not creating:
                     self.recalculate_level(current_node.path, phase='Generating')
 
                 else:
@@ -141,8 +141,8 @@ class Trie:
         current_node.prefix_flag = True
         self._prefix_nodes[current_node.depth] += 1
 
-        if not allow_generating:
-            current_node.allow_generate = allow_generating
+        if not creating:
+            current_node.generated = creating
 
         if current_node.depth > self._trie_depth:
             self._trie_depth = current_node.depth
@@ -161,30 +161,45 @@ class Trie:
         :return: None
         """
         for plan_entry in self.Help.distribution_plan:
+            used_nodes = set()
+
 
             if len(plan_entry["generated_info"]) == 0:
                 continue
 
             while plan_entry["generated_info"]:
-                new_prefix_len = list(plan_entry["generated_info"].keys())[0]
-
-                print(f"Generaiting {new_prefix_len}")
-
-                org_level = self.Help.get_organisation_level_by_depth(new_prefix_len) - 1
-                node_index = random.randint(0, len(self.nodes[org_level]) - 1)
-
                 while True:
+                    new_prefix_len = list(plan_entry["generated_info"].keys())[0]
+
+                    print(f"Generaiting {new_prefix_len}")
+
+                    org_level = self.Help.get_organisation_level_by_depth(new_prefix_len) - 1
+
+                    if org_level + 1 == 3:
+                        self.nodes[2] += self.nodes[1]
+
+                    node_index = random.randint(0, len(self.nodes[org_level]) - 1)
 
                     try:
+
                         new_bits = self.Help.generate_new_bits(self.nodes[org_level][node_index].depth, new_prefix_len)
-                        self.add_node(new_bits, self.nodes[org_level][node_index])
+                        self.add_node(new_bits, parent_node=self.nodes[org_level][node_index], creating=False)
+                        used_nodes.clear()
 
                         break
 
-                    except (PrefixAlreadyExists, MaximumLevelException):
+                    except PrefixAlreadyExists:
                         continue
 
-                print(f"Node list len is changed {len(self.nodes[org_level + 1])}")
+                    except MaximumLevelException:
+                        used_nodes.add(node_index)
+                        print(len(used_nodes))
+
+                        if len(used_nodes) == len(self.nodes[org_level]):
+                            raise CannotGenerateDueMaximumLevel("Cannot generate prefix from any prefix in trie "
+                                                                "(level always is great than maximum possible level)")
+
+                        continue
 
                 if plan_entry["generated_info"][new_prefix_len] - 1 == 0:
                     print("Generate and pop element")
