@@ -13,7 +13,7 @@ class V6Generator:
     # Helper parameters
     prefix_quantity = attr.ib(type=int)
     depth_distribution = attr.ib(factory=dict, type=Dict)
-    level_distribution = attr.ib(factory=dict, type=Dict)
+    max_level = attr.ib(default=7, type=int)
     input_prefixes = attr.ib(factory=list, type=list)
     Help = attr.ib(default=Helper(), type=Helper)
 
@@ -41,7 +41,7 @@ class V6Generator:
         # Initialize helper class
         self.help_init()
 
-        self._binary_trie.max_possible_level = self._max_level()
+        self._binary_trie.max_possible_level = self.max_level
 
         # Create output graphs
         # self.create_depth_distributing_graph("depth_distributing_before_generating.svg")
@@ -145,23 +145,5 @@ class V6Generator:
             raise ValueError("Generated prefixes num is greater than expected")
 
     def _check_level_distribution(self):
-        if self._binary_trie.init_max_level > self._max_level():
+        if self._binary_trie.calculate_maximum_trie_lvl() > self.max_level:
             raise ValueError("Current max trie level more than max lvl from level distribution parameter")
-
-        # if self._binary_trie.init_max_level == self._max_level():
-        #     raise ValueError("Current max trie level is already equal to max lvl from level distribution param. Generating isn't possible")
-
-        for level, prefixes_num in self.level_distribution.items():
-            trie_prefixes = self._binary_trie.level_distribution.get(level)
-
-            if trie_prefixes > prefixes_num:
-                raise ValueError(f"Number of prefixes on generated level {level} can't be less than current number")
-
-    def _max_level(self):
-        max_level = 0
-
-        for key in self.level_distribution.keys():
-            if self.level_distribution[key] != 0 and key > max_level:
-                max_level = key
-
-        return max_level

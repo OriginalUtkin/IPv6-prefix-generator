@@ -53,14 +53,12 @@ def parse_depth_distribution(value):
 
 def parse_level_distribution(value):
 
-    parsed = value.split(',')
-    result = {key: 0 for key in range(6)}
+    max_level = int(value)
 
-    for value in parsed:
-        separated_value = value.split(':')
-        result[int(separated_value[0])] = int(separated_value[1])
+    if max_level < 0:
+        raise ValueError("Value of maximum possible level cannot be less than 0")
 
-    return result
+    return max_level
 
 
 def read_seed_file(seed_file):
@@ -115,7 +113,7 @@ def parse_args():
 
     parser.add_argument('--depth_distribution', required=True, type=parse_depth_distribution, help="Defines a distribution by depth")
 
-    parser.add_argument('--level_distribution', required=True, type=parse_level_distribution, help="Defines distribution by level")
+    parser.add_argument('--max_level', required=True, type=parse_level_distribution, help="Defines maximum possible by level")
 
     return vars(parser.parse_args())
 
@@ -135,7 +133,7 @@ if __name__ == "__main__":
     generator = V6Generator(
         prefix_quantity=parsed_arguments['prefix_quantity'],
         depth_distribution=parsed_arguments['depth_distribution'],
-        level_distribution=parsed_arguments['level_distribution'],
+        max_level=parsed_arguments['max_level'],
         input_prefixes=input_prefixes
     )
 

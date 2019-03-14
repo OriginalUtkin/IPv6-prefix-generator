@@ -65,11 +65,7 @@ class V6Generator:
         self.Help.create_distributing_strategy(self._binary_trie.prefix_leaf_nodes)
 
     def start_generating(self):
-        # print(f"level before generaiting: {self._binary_trie._max_trie_level}")
-        # print(f"TRIE TRAVERSAL prefixes: {self._generated_traversing_trie}")
-        # print(f"RANDOM prefixes: {self._randomly_generated_prefixes}")
-        # print(f"RANDOM PLAN -> {Helper.distribution_random_plan}")
-        # print(f"start number of prefixes ===> {self._binary_trie.prefix_nodes}")
+
         self._binary_trie.preorder(self._binary_trie.root_node, "generate")
         # print(f"level after generaiting: {self._binary_trie._max_trie_level}")
 

@@ -13,13 +13,11 @@ class Trie:
     root_node = attr.ib(default=Node(None, 0), type=Node)
     max_possible_level = attr.ib(default=7, type=int)
 
-    _init_max_level = attr.ib(default=0, type=int)
     _max_trie_level = attr.ib(default=0, type=int)
     _generated_prefixes = attr.ib(factory=list, type=list)
     _trie_depth = attr.ib(default=0, type=int)
     _prefix_leaf_nodes = attr.ib(factory=dict, type=dict)
     _prefix_nodes = attr.ib(factory=dict, type=dict)
-    _level_distribution = attr.ib(factory=dict, type=dict)
 
     Help = attr.ib(default=None, type=Helper)
 
@@ -32,16 +30,9 @@ class Trie:
             self._prefix_nodes[value] = 0
             self._prefix_leaf_nodes[value] = 0
 
-        for value in range(6):
-            self._level_distribution[value] = 0
-
     @property
     def trie_level(self):
         return self._max_trie_level
-
-    @property
-    def level_distribution(self):
-        return self._level_distribution
 
     @property
     def trie_depth(self) -> int:
@@ -65,14 +56,12 @@ class Trie:
     def full_prefix_nodes(self):
         return self._prefix_nodes
 
-    @property
-    def init_max_level(self):
-
+    def calculate_maximum_trie_lvl(self):
         max_level = 0
 
-        for key in self._level_distribution.keys():
-            if self._level_distribution[key] != 0 and key > max_level:
-                max_level = key
+        for _, nodes_list in self.nodes.items():
+            for node in nodes_list:
+                if node.level > max_level: max_level = node.level
 
         return max_level
 
@@ -95,9 +84,6 @@ class Trie:
         path = []
 
         for curr_len, bit in enumerate(node_value, 1):
-
-            if current_node.level > self._max_trie_level:
-                self._max_trie_level = current_node.level
 
             if bit == '0':
                 # add node to trie as a left child
@@ -149,6 +135,7 @@ class Trie:
 
         org_level = self.Help.get_organisation_level_by_depth(current_node.depth)
         self.nodes[org_level].append(current_node)
+        self._max_trie_level = self.calculate_maximum_trie_lvl()
 
         return current_node
 
@@ -162,7 +149,6 @@ class Trie:
         """
         for plan_entry in self.Help.distribution_plan:
             used_nodes = set()
-
 
             if len(plan_entry["generated_info"]) == 0:
                 continue
