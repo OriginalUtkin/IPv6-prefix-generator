@@ -135,20 +135,17 @@ class Helper:
 
             # number of leaf prefixes the same as number of prefixes on following organisation level
             if test == 1:
-                print("case 1")
                 self.generating_strategy[i]['generating_strategy'] = [1 for _ in range(leafs)]
 
                 continue
 
             # Just one leaf prefix on previous organisation level
             if test == new_prefixes:
-                print("case 2")
                 self.generating_strategy[i]['generating_strategy'] = [new_prefixes]
 
                 continue
 
             if test > 1:
-                print("case 3")
                 tmp = [int(test) for _ in range(leafs - 1)]
                 tmp.append(new_prefixes - len(tmp)*int(test))
                 self.generating_strategy[i]['generating_strategy'] = tmp
@@ -156,7 +153,6 @@ class Helper:
                 continue
 
             if test < 1:
-                print("case 4")
                 self.generating_strategy[i]['generating_strategy'] = [1 for _ in range(new_prefixes)]
 
                 continue

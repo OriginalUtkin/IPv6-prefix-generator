@@ -54,7 +54,7 @@ class V6Generator:
         self._binary_trie.max_possible_level = self._max_level()
 
         # Create output graphs
-        self.create_depth_distributing_graph("depth_distributing_before_generating.svg")
+        # self.create_depth_distributing_graph("depth_distributing_before_generating.svg")
 
     def help_init(self):
         self.Help.start_depth_distribution = self._binary_trie.full_prefix_nodes
@@ -146,7 +146,6 @@ class V6Generator:
                     raise ValueError(f"Cannot generate prefixes on  depth level {i}")
             else:
                 # If exists some leafs nodes on previous depth level -> prefixes will be generated from them
-                print(f"LEAFS -> {self.Help.group_by_length(self._binary_trie.prefix_leaf_nodes)[i-1]}")
                 if self.Help.group_by_length(self._binary_trie.prefix_leaf_nodes)[i-1]['prefixes_num'] > 0:
                     continue
 
@@ -184,9 +183,6 @@ class V6Generator:
     def _check_level_distribution(self):
         if self._binary_trie.init_max_level > self._max_level():
             raise ValueError("Current max trie level more than max lvl from level distribution parameter")
-
-        # if self._binary_trie.init_max_level == self._max_level():
-        #     raise ValueError("Current max trie level is already equal to max lvl from level distribution param. Generating isn't possible")
 
         for level, prefixes_num in self.level_distribution.items():
             trie_prefixes = self._binary_trie.level_distribution.get(level)

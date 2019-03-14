@@ -157,8 +157,6 @@ class Trie:
                 while True:
                     new_prefix_len = list(plan_entry["generated_info"].keys())[0]
 
-                    print(f"Generaiting {new_prefix_len}")
-
                     org_level = self.Help.get_organisation_level_by_depth(new_prefix_len) - 1
 
                     if org_level + 1 == 3:
@@ -188,11 +186,9 @@ class Trie:
                         continue
 
                 if plan_entry["generated_info"][new_prefix_len] - 1 == 0:
-                    print("Generate and pop element")
                     del self.Help.distribution_plan[org_level+1]["generated_info"][new_prefix_len]
 
                 else:
-                    print("Generate and decrease number of elements")
                     curr_values = self.Help.distribution_plan[org_level+1]["generated_info"][new_prefix_len]
                     self.Help.distribution_plan[org_level + 1]["generated_info"][new_prefix_len] = curr_values - 1
 
@@ -241,7 +237,6 @@ class Trie:
 
         if phase is 'Generating':
             full_path = self.get_full_path(node, include_current=True)
-            print("Recalculating while generating")
 
             tmp_path = [i.level for i in full_path]
             self.recalculating_process_tmp(tmp_path)

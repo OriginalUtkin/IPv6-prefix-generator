@@ -71,5 +71,3 @@ v6Gene/input.dms
 # output graphs
 V6Gene/graphs/*.svg
 
-# input and test files
-*.dms

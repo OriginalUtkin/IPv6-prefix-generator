@@ -21,7 +21,7 @@ pip install -r requirements.txt
 > git clone https://github.com/OriginalUtkin/IPv6-prefix-generator.git
 ```
 
-2. Create dedicated python virtual env for the project; project is based on python3.6.
+2. Create dedicated python virtual env for the project; project is based on python 3.6.
 
 3. Activate created env and install requirements (see Installation section)
 

@@ -155,7 +155,6 @@ def parse_args():
 
 
 parsed_arguments = parse_args()
-
 if parsed_arguments['input'] and not validate_file(parsed_arguments['input'], 'r'):
     raise argparse.ArgumentError("Input seed file doesn't exist or is not readable")
 
