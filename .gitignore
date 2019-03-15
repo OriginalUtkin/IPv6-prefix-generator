@@ -60,9 +60,6 @@ var/
 .installed.cfg
 *.egg
 
-# extra virtualenv locations
-.venv/
-venv/
 
 # some test files
 polygon.py
