@@ -37,6 +37,11 @@ def validate_prefix_quantity(value):
 
 
 def parse_depth_distribution(value):
+    """
+
+    :param value:
+    :return:
+    """
     parsed = value.split(',')
     result = {key: 0 for key in range(65)}
 
@@ -52,13 +57,29 @@ def parse_depth_distribution(value):
 
 
 def parse_level_distribution(value):
+    """
 
+    :param value:
+    :return:
+    """
     max_level = int(value)
 
     if max_level < 0:
         raise ValueError("Value of maximum possible level cannot be less than 0")
 
     return max_level
+
+
+def parse_depth_distribution_file(path):
+    """
+
+    :param path:
+    :return:
+    """
+    with open(path) as file:
+        file_data = file.read()
+
+        return parse_depth_distribution(file_data)
 
 
 def read_seed_file(seed_file):
@@ -95,6 +116,7 @@ def read_seed_file(seed_file):
         return set(verified_addresses)
 
 
+
 def parse_args():
     """
     Prepare argparse object for working with input arguments
@@ -111,9 +133,11 @@ def parse_args():
     parser.add_argument('--prefix_quantity', required=True, type=validate_prefix_quantity, help="Defines number of prefixes to "
                                                                                                 "generate. Integer positive value")
 
-    parser.add_argument('--depth_distribution', required=True, type=parse_depth_distribution, help="Defines a distribution by depth")
+    parser.add_argument('--depth_distribution', type=parse_depth_distribution, help="Defines a distribution by depth")
 
     parser.add_argument('--max_level', required=True, type=parse_level_distribution, help="Defines maximum possible by level")
+
+    parser.add_argument('--depth_distribution_path', type=parse_depth_distribution_file, help="Depth to the depth distribution parameter file which contains data ")
 
     return vars(parser.parse_args())
 
@@ -121,6 +145,16 @@ def parse_args():
 if __name__ == "__main__":
 
     parsed_arguments = parse_args()
+
+    if not parsed_arguments.get("depth_distribution_path", None) and not parsed_arguments.get("depth_distribution", None):
+        raise argparse.ArgumentError("Argument depth distribution or depth distribution path is required")
+
+    if parsed_arguments.get("depth_distribution_path", None) and parsed_arguments.get("depth_distribution", None):
+        raise argparse.ArgumentError("Arguments depth_distribution_path and depth_distribution couldn't be combined")
+
+    depth_distribution = parsed_arguments.get("depth_distribution_path") if \
+                         parsed_arguments.get("depth_distribution_path", None) else \
+                         parsed_arguments.get("depth_distribution")
 
     if parsed_arguments['input'] and not validate_file(parsed_arguments['input'], 'r'):
         raise argparse.ArgumentError("Input seed file doesn't exist or is not readable")
@@ -132,7 +166,7 @@ if __name__ == "__main__":
 
     generator = V6Generator(
         prefix_quantity=parsed_arguments['prefix_quantity'],
-        depth_distribution=parsed_arguments['depth_distribution'],
+        depth_distribution=depth_distribution,
         max_level=parsed_arguments['max_level'],
         input_prefixes=input_prefixes
     )

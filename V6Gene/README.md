@@ -3,7 +3,7 @@
 ## Usage 
 * CLI
 ```
-python3 IPv6Gene.py --depth_distribution 0:<int>,1:<int>,2:<int>...64:<int> --level_distribution 0:<int>,1:<int>,2:<int>...64:<int> --input <path to input seed file> --prefix_quantity <int> --rgr <float>
+python3 V6Gene.py --depth_distribution 0:<int>,1:<int>,2:<int>...64:<int> --level_distribution 0:<int>,1:<int>,2:<int>...64:<int> --input <path to input seed file> --prefix_quantity <int> --rgr <float>
 ```
 
 
