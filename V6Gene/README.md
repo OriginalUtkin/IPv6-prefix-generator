@@ -6,15 +6,35 @@
 python3 V6Gene.py --depth_distribution 0:<int>,1:<int>,2:<int>...64:<int> --level_distribution 0:<int>,1:<int>,2:<int>...64:<int> --input <path to input seed file> --prefix_quantity <int> --rgr <float>
 ```
 
+or using files with specified distributions
+
+```
+python3 V6Gene.py --depth_distribution_path input_params/V6Gene/input_depth --input dataset/test_data/test_v6Gene.dms --prefix_quantity 5 --rgr 0.6 --level_distribution_path input_params/V6Gene/input_level
+```
+
 
 ## Input parameters
-- `depth_distribution` - output (requested) depth distribution
 - `input` - seed prefix file which contains prefixes which will be added to binary trie
+
 - `prefix_quantity` - number of prefixes which will be generated 
-- `level_distribution` - output (requested) level binary trie distribution
+
 - `rgr` - percent part of all prefixes which will be generated randomly (without traversing binary trie)
 
+
+- `depth_distribution` - output (requested) depth distribution
+
+- `depth_distribution_path` - Specify path to the file which contains depth distribution data. Sample file could be found in the
+                        `input_params/V6Gene folder`. This argument can't be combined with depth_distribution argument. If not
+                        given, `depth_distribution` is required. 
+
+- `level_distribution` - output (requested) level binary trie distribution. This argument can't be combined with `level_distribution` argument. If not
+                        given, `level_distribution` is required
+                        
+- `level_distribution_path` - Specify path to the file which contains level distribution data. Can't be combined with `level_distribution` argument. If not given,
+                        `level_distribution` is required. Sample file could be found in the `input_params/V6Gene folder`
+                        
 ## Parameters explanation 
+                        
 
 - `level distribution parameter` - find maximum level value which has more than 0 prefixes.
 In case of test parameters -> 1; 0:10,1:1,2:0,3:0,4:15,5:0 -> In that case max possible level is set as 4

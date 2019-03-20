@@ -19,13 +19,24 @@ called at the start  of the program.
 ```
 python3 IPv6Gene.py --depth_distribution 0:<int>,1:<int>,2:<int>...64:<int> --input <path to input seed file> --prefix_quantity <int> --max_level <int>
 ```
-
+ or using files with specified depth distribution
+ 
+ ```
+ python3 IPv6Gene.py --input dataset/test_data/test_v6Generator.dms --depth_distribution_path input_params/IPv6Gene/input_depth  --prefix_quantity 4 --max_level 5 --output output.txt
+```
 
 ## Input parameters
 - `depth_distribution` - output (requested) depth distribution
+
 - `input` - seed prefix file which contains prefixes which will be added to binary trie
+
 - `prefix_quantity` - number of prefixes that will be generating 
+
 - `max_level` - specify max possible level for binary trie
+
+- `depth_distribution_path` - Specify path to the file which contains depth distribution data. Sample file could be found in the
+                        `input_params/IPv6Gene folder`. This argument can't be combined with `depth_distribution` argument. If not
+                        given, `depth_distribution` is required. 
 
 
 ## Example
