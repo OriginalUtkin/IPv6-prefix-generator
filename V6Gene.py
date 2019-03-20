@@ -92,6 +92,18 @@ def validate_rgr(value):
     return value
 
 
+def parse_depth_distribution_file(path):
+    """
+
+    :param path:
+    :return:
+    """
+    with open(path) as file:
+        file_data = file.read()
+
+        return parse_depth_distribution(file_data)
+
+
 def read_seed_file(seed_file):
     """
 
@@ -134,7 +146,7 @@ def parse_args():
 
     parser = argparse.ArgumentParser(description="Arguments parser for IPv6 prefix generator")
 
-    parser.add_argument('--input', required=True, help="Defines a path to input file, which contains seed prefixes for "
+    parser.add_argument('--input', required=True, help="Defines a path to input file, which contains seed file with prefixes for "
                                                        "building binary trie")
 
     parser.add_argument('--output', help="Defines a path to output file for printing generated prefixes")
@@ -147,28 +159,44 @@ def parse_args():
                                                                         "seed prefix file to the number of all prefixes"
                                                                         " to be generated")
 
-    parser.add_argument('--depth_distribution', required=True, type=parse_depth_distribution, help="Defines a distribution by depth")
+    parser.add_argument('--depth_distribution', type=parse_depth_distribution, help="Defines a distribution by depth")
 
     parser.add_argument('--level_distribution', required=True, type=parse_level_distribution, help="Defines distribution by level")
+
+    parser.add_argument('--depth_distribution_path', type=parse_depth_distribution_file, help="Depth to the depth distribution parameter file which contains data ")
 
     return vars(parser.parse_args())
 
 
-parsed_arguments = parse_args()
-if parsed_arguments['input'] and not validate_file(parsed_arguments['input'], 'r'):
-    raise argparse.ArgumentError("Input seed file doesn't exist or is not readable")
+if __name__ == "__main__":
 
-if parsed_arguments['output'] and not validate_file(parsed_arguments['output'], 'r+'):
-    raise TypeError("Output file doesn't exist or is not writable")
+    parsed_arguments = parse_args()
 
-input_prefixes = read_seed_file(parsed_arguments['input'])
+    if not parsed_arguments.get("depth_distribution_path", None) and not parsed_arguments.get("depth_distribution", None):
+        raise argparse.ArgumentError("Argument depth distribution or depth distribution path is required")
 
-generator = V6Generator(
-    prefix_quantity=parsed_arguments['prefix_quantity'],
-    rgr=parsed_arguments['rgr'],
-    depth_distribution=parsed_arguments['depth_distribution'],
-    level_distribution=parsed_arguments['level_distribution'],
-    input_prefixes=input_prefixes
-)
+    if parsed_arguments.get("depth_distribution_path", None) and parsed_arguments.get("depth_distribution", None):
+        raise argparse.ArgumentError("Arguments depth_distribution_path and depth_distribution couldn't be combined")
 
-new_prefixes = generator.start_generating()
+    depth_distribution = parsed_arguments.get("depth_distribution_path") if \
+        parsed_arguments.get("depth_distribution_path", None) else \
+        parsed_arguments.get("depth_distribution")
+
+    if parsed_arguments['input'] and not validate_file(parsed_arguments['input'], 'r'):
+        print(parsed_arguments['input'])
+        raise argparse.ArgumentError("Input seed file doesn't exist or is not readable")
+
+    if parsed_arguments['output'] and not validate_file(parsed_arguments['output'], 'r+'):
+        raise TypeError("Output file doesn't exist or is not writable")
+
+    input_prefixes = read_seed_file(parsed_arguments['input'])
+
+    generator = V6Generator(
+        prefix_quantity=parsed_arguments['prefix_quantity'],
+        rgr=parsed_arguments['rgr'],
+        depth_distribution=depth_distribution,
+        level_distribution=parsed_arguments['level_distribution'],
+        input_prefixes=input_prefixes
+    )
+
+    new_prefixes = generator.start_generating()

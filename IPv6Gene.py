@@ -1,7 +1,6 @@
 from IPv6Gene.Generator.v6Generator import V6Generator
 import argparse
 import ipaddress
-import math
 
 
 def validate_file(path, modifier):
@@ -114,7 +113,6 @@ def read_seed_file(seed_file):
 
         # Prune redundant prefixes
         return set(verified_addresses)
-
 
 
 def parse_args():

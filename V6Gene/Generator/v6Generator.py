@@ -174,10 +174,10 @@ class V6Generator:
             if prefixes_num - current_value < 0:
                 raise ValueError("Number of prefixes on generated depth can't be less than current number")
 
-            # calculate number of prefixes which should be generated for current depth
-            new_prefixes_num += prefixes_num - current_value
+        new_prefixes = sum(item['prefixes_num'] for item in final_distribution) - \
+                       sum(item['prefixes_num'] for item in initiate_distribution)
 
-        if new_prefixes_num > self.prefix_quantity:
+        if new_prefixes > self.prefix_quantity:
             raise ValueError("Generated prefixes num is greater than expected")
 
     def _check_level_distribution(self):
