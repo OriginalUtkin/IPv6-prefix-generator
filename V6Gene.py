@@ -104,6 +104,18 @@ def parse_depth_distribution_file(path):
         return parse_depth_distribution(file_data)
 
 
+def parse_level_distribution_file(path):
+    """
+
+    :param path:
+    :return:
+    """
+    with open(path) as file:
+        file_data = file.read()
+
+        return parse_level_distribution(file_data)
+
+
 def read_seed_file(seed_file):
     """
 
@@ -144,26 +156,58 @@ def parse_args():
     :return: dictionary which has a following format -> input_argument_name: argument_value
     """
 
-    parser = argparse.ArgumentParser(description="Arguments parser for IPv6 prefix generator")
+    parser = argparse.ArgumentParser(description="Arguments parser for IPv6 prefix generator.")
 
-    parser.add_argument('--input', required=True, help="Defines a path to input file, which contains seed file with prefixes for "
-                                                       "building binary trie")
+    parser.add_argument('--input', required=True, help="Defines a path to input file, which contains seed file "
+                                                       "with prefixes for building binary trie")
 
     parser.add_argument('--output', help="Defines a path to output file for printing generated prefixes")
 
-    parser.add_argument('--prefix_quantity', required=True, type=validate_prefix_quantity, help="Defines number of prefixes to "
-                                                                                                "generate. Integer positive value")
+    parser.add_argument('--prefix_quantity', required=True, type=validate_prefix_quantity, help="Defines number of "
+                                                                                                "prefixes to generate."
+                                                                                                "Should be defined by "
+                                                                                                "positive integer value"
+                        )
 
     parser.add_argument('--rgr', required=True, type=validate_rgr, help="Defines as the ratio of the number of prefixes"
                                                                         " to be generated without regarding to the "
                                                                         "seed prefix file to the number of all prefixes"
                                                                         " to be generated")
 
-    parser.add_argument('--depth_distribution', type=parse_depth_distribution, help="Defines a distribution by depth")
+    parser.add_argument('--depth_distribution', type=parse_depth_distribution, help="Defines a distribution by depth. "
+                                                                                    "Can't be combined with "
+                                                                                    "depth_distribution_path argument")
 
-    parser.add_argument('--level_distribution', required=True, type=parse_level_distribution, help="Defines distribution by level")
+    parser.add_argument('--level_distribution', type=parse_level_distribution, help="Defines distribution by level."
+                                                                                    " Can't be combined with "
+                                                                                    "level_distribution_path argument."
+                                                                                    "If not given, "
+                                                                                    "level_distribution_path is "
+                                                                                    "required")
 
-    parser.add_argument('--depth_distribution_path', type=parse_depth_distribution_file, help="Depth to the depth distribution parameter file which contains data ")
+    parser.add_argument('--depth_distribution_path', type=parse_depth_distribution_file, help="Specify path to the "
+                                                                                              "file which contains "
+                                                                                              "depth distribution "
+                                                                                              "data. Sample file could "
+                                                                                              "be found in the "
+                                                                                              "input_params/V6Gene "
+                                                                                              "folder. This argument "
+                                                                                              "can't be combined with "
+                                                                                              "depth_distribution "
+                                                                                              "argument. If not given"
+                                                                                              ", depth_distribution is "
+                                                                                              "required")
+
+    parser.add_argument('--level_distribution_path', type=parse_level_distribution_file, help="Path to the file which "
+                                                                                         "contains level distribution "
+                                                                                         "data. Sample file could be "
+                                                                                         "found in the "
+                                                                                         "input_params/V6Gene folder. "
+                                                                                         "This argument can't be "
+                                                                                         "combined with level_"
+                                                                                         "distribution argument. If not"
+                                                                                         " given, level_distribution is"
+                                                                                         " required")
 
     return vars(parser.parse_args())
 
@@ -182,8 +226,17 @@ if __name__ == "__main__":
         parsed_arguments.get("depth_distribution_path", None) else \
         parsed_arguments.get("depth_distribution")
 
+    if not parsed_arguments.get("level_distribution_path", None) and not parsed_arguments.get("level_distribution", None):
+        raise argparse.ArgumentError("Argument level_distribution or level_distribution_path is required")
+
+    if parsed_arguments.get("level_distribution_path", None) and parsed_arguments.get("level_distribution", None):
+        raise argparse.ArgumentError("Arguments level_distribution_path and level_distribution couldn't be combined")
+
+    level_distribution = parsed_arguments.get("level_distribution_path") if \
+        parsed_arguments.get("level_distribution_path", None) else \
+        parsed_arguments.get("level_distribution")
+
     if parsed_arguments['input'] and not validate_file(parsed_arguments['input'], 'r'):
-        print(parsed_arguments['input'])
         raise argparse.ArgumentError("Input seed file doesn't exist or is not readable")
 
     if parsed_arguments['output'] and not validate_file(parsed_arguments['output'], 'r+'):
@@ -195,7 +248,7 @@ if __name__ == "__main__":
         prefix_quantity=parsed_arguments['prefix_quantity'],
         rgr=parsed_arguments['rgr'],
         depth_distribution=depth_distribution,
-        level_distribution=parsed_arguments['level_distribution'],
+        level_distribution=level_distribution,
         input_prefixes=input_prefixes
     )
 

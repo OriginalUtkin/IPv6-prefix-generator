@@ -128,14 +128,19 @@ def parse_args():
 
     parser.add_argument('--output', help="Defines a path to output file for printing generated prefixes")
 
-    parser.add_argument('--prefix_quantity', required=True, type=validate_prefix_quantity, help="Defines number of prefixes to "
-                                                                                                "generate. Integer positive value")
+    parser.add_argument('--prefix_quantity', required=True, type=validate_prefix_quantity, help="Defines number of "
+                                                                                                "prefixes to generate. "
+                                                                                                "Defined by integer "
+                                                                                                "positive value")
 
     parser.add_argument('--depth_distribution', type=parse_depth_distribution, help="Defines a distribution by depth")
 
-    parser.add_argument('--max_level', required=True, type=parse_level_distribution, help="Defines maximum possible by level")
+    parser.add_argument('--max_level', required=True, type=parse_level_distribution, help="Defines maximum possible by "
+                                                                                          "level")
 
-    parser.add_argument('--depth_distribution_path', type=parse_depth_distribution_file, help="Depth to the depth distribution parameter file which contains data ")
+    parser.add_argument('--depth_distribution_path', type=parse_depth_distribution_file, help="Path to the file which "
+                                                                                              "contains depth "
+                                                                                              "distribution data")
 
     return vars(parser.parse_args())
 

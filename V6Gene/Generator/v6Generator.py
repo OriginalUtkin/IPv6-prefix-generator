@@ -118,8 +118,6 @@ class V6Generator:
         final_distribution = self.Help.group_by_length(self.depth_distribution)
         tmp_random = self._randomly_generated_prefixes
 
-        print(self.Help.group_by_length(self._binary_trie.prefix_leaf_nodes))
-
         for i in range(len(initiate_distribution)):
 
             start = initiate_distribution[i]['prefixes_num']
