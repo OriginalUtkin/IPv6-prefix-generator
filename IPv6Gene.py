@@ -172,3 +172,11 @@ if __name__ == "__main__":
     )
 
     new_prefixes = generator.start_generating()
+
+    for prefix in new_prefixes:
+        print(prefix)
+
+    if parsed_arguments['output']:
+        with open(parsed_arguments['output'], 'a') as file:
+            for prefix in new_prefixes:
+                file.write(prefix + '\n')

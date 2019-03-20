@@ -65,8 +65,7 @@ class V6Generator:
         output_converter = Converter(new_prefixes)
         converted_prefixes = output_converter.convert_prefixes()
 
-        for prefix in converted_prefixes:
-            print(prefix)
+        return converted_prefixes
 
         # self.create_depth_distributing_graph("depth_distributing_after_generating.svg")
 
