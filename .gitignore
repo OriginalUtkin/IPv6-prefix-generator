@@ -61,6 +61,9 @@ var/
 *.egg
 
 
+# Virtual env
+venv/
+
 # some test files
 polygon.py
 v6Gene/input.dms
