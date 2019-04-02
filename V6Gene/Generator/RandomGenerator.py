@@ -22,7 +22,7 @@ class RandomGenerator:
                             # First 4 bits will be IANA part
                             new_bits = Helper.generate_new_bits(4, prefix_len)
                             new_prefix = IANA + new_bits
-                            self.binary_trie.add_node(new_prefix, allow_generating=False)
+                            self.binary_trie.add_node(new_prefix, creating_phase=False)
 
                             break
 

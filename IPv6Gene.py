@@ -87,7 +87,7 @@ def read_seed_file(seed_file):
     :param seed_file:
     :return:
     """
-    verified_addresses = list()
+    verified_addresses = set()
 
     with open(seed_file, 'r') as fp:
 
@@ -105,14 +105,14 @@ def read_seed_file(seed_file):
                 if prefix_len < 1 or prefix_len > 64:
                     continue
 
-                verified_addresses.append(address)
+                verified_addresses.add(address)
 
             # Prune invalid prefixes
             except ipaddress.AddressValueError:
                 continue
 
         # Prune redundant prefixes
-        return set(verified_addresses)
+        return verified_addresses
 
 
 def parse_args():
@@ -167,6 +167,8 @@ if __name__ == "__main__":
 
     input_prefixes = read_seed_file(parsed_arguments['input'])
 
+    print(f"[INFO] Number of seed prefixes {len(set(input_prefixes))}")
+
     generator = V6Generator(
         prefix_quantity=parsed_arguments['prefix_quantity'],
         depth_distribution=depth_distribution,
@@ -178,6 +180,8 @@ if __name__ == "__main__":
 
     for prefix in new_prefixes:
         print(prefix)
+
+    print(len(new_prefixes))
 
     if parsed_arguments['output']:
         with open(parsed_arguments['output'], 'a') as file:

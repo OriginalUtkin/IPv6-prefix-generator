@@ -31,11 +31,11 @@ class Trie:
             self._level_distribution[value] = 0
 
     @property
-    def trie_level(self):
+    def trie_level(self) -> int:
         return self._max_trie_level
 
     @property
-    def level_distribution(self):
+    def level_distribution(self) -> int:
         return self._level_distribution
 
     @property
@@ -74,7 +74,7 @@ class Trie:
         return {key: value for key, value in self._prefix_nodes.items() if value > 0}
 
     @property
-    def full_prefix_nodes(self):
+    def full_prefix_nodes(self) -> list:
         return self._prefix_nodes
 
     @property
@@ -96,7 +96,7 @@ class Trie:
         self.root_node.prefix_flag = True
         self._prefix_nodes[0] += 1
 
-    def add_node(self, node_value: str, parent_node: Optional[Node] = None, allow_generating: bool = True) -> Node:
+    def add_node(self, node_value: str, parent_node: Optional[Node] = None, creating: bool = True) -> Node:
         """Add new node to binary trie.
 
         :exception  PrefixAlreadyExists in case if new node already exists in binary trie
@@ -104,7 +104,7 @@ class Trie:
 
         :param node_value: string; string representation of node
         :param parent_node None or Node; node object which represent the parent for added node
-        :param allow_generating boolean; allow generating new nodes from added node
+        :param creating boolean; allow generating new nodes from added node
         :return: None
         """
         if not parent_node:
@@ -149,7 +149,7 @@ class Trie:
             current_node.path = path[-1]
 
             try:
-                if not allow_generating:
+                if not creating:
                     self.recalculate_level(current_node.path, phase='Generating')
 
                 else:
@@ -161,8 +161,8 @@ class Trie:
         current_node.prefix_flag = True
         self._prefix_nodes[current_node.depth] += 1
 
-        if not allow_generating:
-            current_node.allow_generate = allow_generating
+        if not creating:
+            current_node.allow_generate = creating
 
         if current_node.depth > self._trie_depth:
             self._trie_depth = current_node.depth
@@ -263,7 +263,7 @@ class Trie:
 
         while curr:
             full_path.append(curr)
-            curr = curr.path
+            curr = curr.tie_path
 
         return full_path[::-1]
 
@@ -341,12 +341,12 @@ class Trie:
     def print_path(self, s):
         return ''.join([i.node_value for i in s if i.node_value])
 
-    def path(self, node: Node):
+    def trie_path(self, node: Node):
         all_path = []
         if node is None:
             return
 
-        s = []
+        s = list()
         s.append(node)
 
         tmp = node.left_child

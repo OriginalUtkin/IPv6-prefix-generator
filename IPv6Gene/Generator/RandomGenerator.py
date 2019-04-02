@@ -1,7 +1,8 @@
 import attr
-from IPv6Gene.Generator.Helper import Helper
+
 from IPv6Gene.Trie import Trie
-from IPv6Gene.Exceptions.Exceptions import PrefixAlreadyExists, MaximumLevelException
+from Exceptions.Exceptions import PrefixAlreadyExists, MaximumLevelException
+from Abstract.AbstractHelper import AbstractHelper
 
 
 @attr.s
@@ -20,9 +21,9 @@ class RandomGenerator:
                     while True:
                         try:
                             # First 4 bits will be IANA part
-                            new_bits = Helper.generate_new_bits(4, prefix_len)
+                            new_bits = AbstractHelper.generate_new_bits(4, prefix_len)
                             new_prefix = IANA + new_bits
-                            self.binary_trie.add_node(new_prefix, creating=False)
+                            self.binary_trie.add_node(new_prefix, creating_phase=False)
 
                             break
 

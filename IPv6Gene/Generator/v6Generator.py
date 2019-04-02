@@ -1,10 +1,12 @@
 import attr
 import matplotlib.pyplot as plt
 
+from Abstract.AbstractHelper import AbstractHelper
+from Abstract.AbstractTrie import AbstractTrie
 from IPv6Gene.Trie import Trie
 from IPv6Gene.Generator.Helper import Helper
 from IPv6Gene.Generator.RandomGenerator import RandomGenerator
-from IPv6Gene.Generator.Converter import Converter
+from Converter.Converter import Converter
 from typing import Dict
 
 
@@ -31,8 +33,12 @@ class V6Generator:
         self._binary_trie.Help = self.Help
 
         #  Construct the seed prefix trie
+        print("---[GENERATING BINARY TRIE PROCESS]: Start ----")
+
         for prefix in self.input_prefixes:
-            self._binary_trie.add_node(Helper.get_binary_prefix(prefix))
+            self._binary_trie.add_node(AbstractHelper.get_binary_prefix(prefix))
+
+        print("---[GENERATING BINARY TRIE PROCESS]: Binary trie was generated ----")
 
         # Check if generating based on depth and level parameter is even possible
         self._check_depth_distribution()
@@ -54,13 +60,16 @@ class V6Generator:
     def start_generating(self):
 
         # Generate new RIR nodes and add them to binary trie
+        print("---[GENERATING NEW PREFIXES RANDOMLY]: Start ----")
         Randomizer = RandomGenerator(self._binary_trie, distribution_plan=Helper.distribution_random_plan)
         Randomizer.random_generate()
+        print("---[GENERATING NEW PREFIXES RANDOMLY]: Done ----")
 
+        print("---[GENERATING NEW PREFIXES TRAVERSING TRIE]: Start ----")
         self._binary_trie.generate_prefixes()
+        print("---[GENERATING NEW PREFIXES TRAVERSING TRIE]: Done ----")
 
-        # self._binary_trie._prefix_nodes
-        new_prefixes = set(self._binary_trie.path(self._binary_trie.root_node))
+        new_prefixes = set(AbstractTrie.get_prefix_nodes(self._binary_trie.root_node))
 
         output_converter = Converter(new_prefixes)
         converted_prefixes = output_converter.convert_prefixes()
@@ -99,8 +108,8 @@ class V6Generator:
 
         :return: None
         """
-        initiate_distribution = self.Help.group_by_length(self._binary_trie.full_prefix_nodes)  # dictionary statistic from previous function
-        final_distribution = self.Help.group_by_length(self.depth_distribution)
+        initiate_distribution = AbstractHelper.group_by_length(self._binary_trie.full_prefix_nodes)  # dictionary statistic from previous function
+        final_distribution = AbstractHelper.group_by_length(self.depth_distribution)
 
         for i in range(len(initiate_distribution)):
 

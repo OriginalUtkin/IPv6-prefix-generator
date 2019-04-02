@@ -1,10 +1,13 @@
 import attr
 
-from typing import Union, Optional
+from typing import Optional
 
 
 @attr.s
 class Node:
+    """
+    Class that represents a node in binary trie
+    """
     node_value = attr.ib(type=Optional[int])
     depth = attr.ib(type=int)
 
@@ -15,6 +18,9 @@ class Node:
     level = attr.ib(default=0, type=int)
     path = attr.ib(default=None)
     is_visited = attr.ib(default=False, type=bool)
+    allow_generate = attr.ib(default=True, type=bool)
+
+    # is used just for debug proposal
     name = attr.ib(default=None, type=str)
 
     @node_value.validator

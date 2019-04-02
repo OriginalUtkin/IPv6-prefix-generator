@@ -6,7 +6,7 @@ from typing import Dict
 from V6Gene.Trie import Trie
 from V6Gene.Generator.Helper import Helper
 from V6Gene.Generator.RandomGenerator import RandomGenerator
-from V6Gene.Generator.Converter import Converter
+from Converter.Converter import Converter
 
 
 @attr.s
