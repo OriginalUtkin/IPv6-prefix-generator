@@ -33,7 +33,7 @@ class Converter:
         :return: string; converted prefix to hexadecimal which has a format prefix/prefix_len
         """
         normalized_prefix = self._normalize_prefix(prefix)
-        hex_repr = ipaddress.ip_address(int(normalized_prefix['prefix'], 2))
+        hex_repr = ipaddress.IPv6Address(int(normalized_prefix['prefix'], 2))
 
         return f"{hex_repr}/{normalized_prefix['prefix_len']}"
 

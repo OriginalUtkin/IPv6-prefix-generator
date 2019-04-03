@@ -18,7 +18,7 @@ class Trie(AbstractTrie):
     Help = attr.ib(default=None, type=Helper)
     tmp_var = 0
     nodes = {
-        0: [], 1: [], 2: [], 3: []
+        0: [], 1: [], 2: [], 3: [],
     }
 
     def __attrs_post_init__(self) -> None:
@@ -104,10 +104,8 @@ class Trie(AbstractTrie):
 
         org_level = self.Help.get_organisation_level_by_depth(current_node.depth)
 
-        # TODO: Need fix there
-        # if not org_level and creating_phase:
-        #     self._max_trie_level = self.calculate_maximum_trie_lvl()
-        #     return current_node
+        if not org_level and creating_phase:
+            return current_node
 
         self.nodes[org_level].append(current_node)
 
