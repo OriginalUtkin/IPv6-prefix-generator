@@ -1,4 +1,5 @@
 from IPv6Gene.Generator.v6Generator import V6Generator
+from  Abstract.AbstractHelper import AbstractHelper
 import argparse
 import ipaddress
 
@@ -90,7 +91,7 @@ def read_seed_file(seed_file):
     verified_addresses = set()
 
     with open(seed_file, 'r') as fp:
-
+        # read file line by line
         for line in fp:
             address = line.rstrip('\n')
 
@@ -105,14 +106,15 @@ def read_seed_file(seed_file):
                 if prefix_len < 1 or prefix_len > 64:
                     continue
 
-                verified_addresses.add(address)
+                verified_addresses.add(AbstractHelper.get_binary_prefix(address))
 
             # Prune invalid prefixes
             except ipaddress.AddressValueError:
                 continue
 
         # Prune redundant prefixes
-        return verified_addresses
+
+        return sorted(verified_addresses, key=len)
 
 
 def parse_args():
@@ -175,13 +177,15 @@ if __name__ == "__main__":
         max_level=parsed_arguments['max_level'],
         input_prefixes=input_prefixes
     )
+    print(f"Start binary trie level is {generator._binary_trie.trie_level}")
 
     new_prefixes = generator.start_generating()
 
     for prefix in new_prefixes:
         print(prefix)
 
-    print(len(new_prefixes))
+    print(f"Number of prefixes after generating {len(new_prefixes)}")
+    print(f"Result binary trie level is {generator._binary_trie.trie_level}")
 
     if parsed_arguments['output']:
         with open(parsed_arguments['output'], 'a') as file:

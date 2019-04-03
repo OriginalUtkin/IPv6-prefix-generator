@@ -13,10 +13,10 @@ from typing import Optional
 @attr.s
 class Trie(AbstractTrie):
     """
-    Class that represents binary trie for improved version of generator 
+    Class that represents binary trie for improved version of generator
     """
     Help = attr.ib(default=None, type=Helper)
-
+    tmp_var = 0
     nodes = {
         0: [], 1: [], 2: [], 3: []
     }
@@ -26,19 +26,11 @@ class Trie(AbstractTrie):
             self._prefix_nodes[value] = 0
             self._prefix_leaf_nodes[value] = 0
 
-    def calculate_maximum_trie_lvl(self):
-        max_level = 0
-
-        for _, nodes_list in self.nodes.items():
-            for node in nodes_list:
-                if node.level > max_level: max_level = node.level
-
-        return max_level
-
     def add_node(self, node_value: str, parent_node: Optional[Node] = None, creating_phase: bool = True) -> Node:
         """Add new node to binary trie.
 
-        :exception  PrefixAlreadyExists in case if new node already exists in binary trie
+        :exception  PrefixAlreadyExists in case if new node already exists in binary trie. Method isn't called in
+                    creating phase
         :exception  MaximumLevelException in case if after adding a new node to binary trie level changes and greater than max possible value
 
         :param node_value: string; string representation of node
@@ -54,15 +46,12 @@ class Trie(AbstractTrie):
         path = []
         path_from_parent_node = list()
 
+        if not creating_phase and AbstractTrie.is_exist(current_node, node_value):
+            raise PrefixAlreadyExists
+
         for curr_len, bit in enumerate(node_value, 1):
 
             if bit == '0':
-                # add node to trie as a left child
-                if curr_len == len(node_value) and current_node.left_child and not creating_phase:
-                    raise PrefixAlreadyExists("Value already exists in binary trie")
-
-                if not creating_phase:
-                    path_from_parent_node.append(current_node)
 
                 if not current_node.left_child:
                     current_node.left_child = Node(bit, current_node.depth + 1)
@@ -70,15 +59,12 @@ class Trie(AbstractTrie):
                 if current_node.prefix_flag:
                     path.append(current_node)
 
+                if not creating_phase:
+                    path_from_parent_node.append(current_node)
+
                 current_node = current_node.left_child
 
             else:
-                # add node to trie as a right child
-                if curr_len == len(node_value) and current_node.right_child and not creating_phase:
-                    raise PrefixAlreadyExists("Value already exists in binary trie")
-
-                if not creating_phase:
-                    path_from_parent_node.append(current_node)
 
                 if not current_node.right_child:
                     current_node.right_child = Node(bit, current_node.depth + 1)
@@ -86,32 +72,32 @@ class Trie(AbstractTrie):
                 if current_node.prefix_flag:
                     path.append(current_node)
 
+                if not creating_phase:
+                    path_from_parent_node.append(current_node)
+
                 current_node = current_node.right_child
 
         if path:
             current_node.path = path[-1]
 
-            try:
-                if not creating_phase:
-                    self.recalculate_level(current_node.path, phase='Generating')
+        full_prefix_path = AbstractTrie.get_full_path(current_node, include_current=True)
 
-                else:
-                    self.recalculate_level(current_node)
+        if len(full_prefix_path) - 1 > full_prefix_path[0].level:
+            if len(full_prefix_path) > self.max_possible_level and not creating_phase:
+                AbstractTrie.delete_node_from_trie(path_from_parent_node)
+                raise MaximumLevelException
 
-            except MaximumLevelException:
+            for prefix_index in range(len(full_prefix_path)):
+                full_prefix_path[prefix_index].level = len(full_prefix_path) - 1 - prefix_index
 
-                # delete added node from trie
-                if not creating_phase:
-                    AbstractTrie.delete_node_from_trie(path_from_parent_node)
-                    path_from_parent_node.clear()
-
-                raise
+        if self._max_trie_level < len(full_prefix_path) - 1:
+            self._max_trie_level = len(full_prefix_path) - 1
+            print(self._max_trie_level)
 
         current_node.prefix_flag = True
         self._prefix_nodes[current_node.depth] += 1
 
-        if not creating_phase:
-            current_node.generated = creating_phase
+        current_node.generated = creating_phase
 
         if current_node.depth > self._trie_depth:
             self._trie_depth = current_node.depth
@@ -124,7 +110,6 @@ class Trie(AbstractTrie):
         #     return current_node
 
         self.nodes[org_level].append(current_node)
-        self._max_trie_level = self.calculate_maximum_trie_lvl()
 
         return current_node
 
@@ -166,6 +151,9 @@ class Trie(AbstractTrie):
 
                     org_level = self.Help.get_organisation_level_by_depth(new_prefix_len) - 1
 
+                    if org_level + 1 == 3:
+                        self.nodes[2] += self.nodes[1]
+
                     node_index = random.randint(0, len(self.nodes[org_level]) - 1)
 
                     try:
@@ -176,11 +164,9 @@ class Trie(AbstractTrie):
                         break
 
                     except PrefixAlreadyExists:
-                        print("PrefixAlready Exists exception, regenerate")
                         continue
 
                     except MaximumLevelException:
-                        print("MaximumLevelException exception, regenerate")
 
                         used_nodes.add(node_index)
 
@@ -197,6 +183,3 @@ class Trie(AbstractTrie):
                 else:
                     curr_values = self.Help.distribution_plan[org_level+1]["generated_info"][new_prefix_len]
                     self.Help.distribution_plan[org_level + 1]["generated_info"][new_prefix_len] = curr_values - 1
-
-            del self.nodes[org_level]
-

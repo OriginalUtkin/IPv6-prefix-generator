@@ -36,7 +36,7 @@ class V6Generator:
         print("---[GENERATING BINARY TRIE PROCESS]: Start ----")
 
         for prefix in self.input_prefixes:
-            self._binary_trie.add_node(AbstractHelper.get_binary_prefix(prefix))
+            self._binary_trie.add_node(prefix)
 
         print("---[GENERATING BINARY TRIE PROCESS]: Binary trie was generated ----")
 
@@ -151,5 +151,5 @@ class V6Generator:
             raise ValueError("Generated prefixes num is greater than expected")
 
     def _check_level_distribution(self):
-        if self._binary_trie.calculate_maximum_trie_lvl() > self.max_level:
+        if self._binary_trie.trie_level > self.max_level:
             raise ValueError("Current max trie level more than max lvl from level distribution parameter")

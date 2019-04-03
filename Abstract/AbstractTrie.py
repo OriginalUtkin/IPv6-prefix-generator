@@ -45,7 +45,7 @@ class AbstractTrie:
     def add_node(self, node_value: str, parent_node: Optional[Node] = None, creating_phase: bool = True) -> Node:
         raise NotImplementedError
 
-    def recalculate_level(self, node: Node, phase='Creating') -> None:
+    def recalculate_level(self, node: Node, phase='Creating') -> int:
         """Recalculate level all parent and sub-parent prefixes after adding new leaf prefix to binary trie.
         Separated into two phases:
         1) Creating phase- means creating binary trie using seed prefix file. At this moment, no info about max possible
@@ -64,7 +64,9 @@ class AbstractTrie:
         if phase is 'Creating':
             full_path = AbstractTrie.get_full_path(node)
 
-            AbstractTrie.recalculating_process(full_path)
+            path_parent_level = AbstractTrie.recalculating_process(full_path)
+
+            return path_parent_level
 
         if phase is 'Generating':
             full_path = AbstractTrie.get_full_path(node, include_current=True)
@@ -80,7 +82,9 @@ class AbstractTrie:
 
                 raise MaximumLevelException("Level after generate new prefix is greater than max possible trie level")
 
-            AbstractTrie.recalculating_process(full_path)
+            path_parent_level = AbstractTrie.recalculating_process(full_path)
+
+            return path_parent_level
 
     def get_depths(self, level) -> List:
         return [key for key in self._prefix_leaf_nodes.keys() if key < level]
@@ -108,7 +112,7 @@ class AbstractTrie:
         return full_path[::-1]
 
     @staticmethod
-    def recalculating_process(path) -> None:
+    def recalculating_process(path) -> int:
         """Recalculate level for all prefix nodes in path variable.
 
         :param path: list which contains previous prefix nodes
@@ -128,6 +132,8 @@ class AbstractTrie:
             else:
                 if path[i].level < path[i + 1].level + 1:
                     path[i].level += 1
+
+        return path[-1].level
 
     @staticmethod
     def recalculating_process_tmp(path) -> None:
@@ -196,7 +202,12 @@ class AbstractTrie:
         return prefix_nodes
 
     @staticmethod
-    def delete_node_from_trie(path_from_main_parent: List[Node]):
+    def delete_node_from_trie(path_from_main_parent: List[Node]) -> None:
+        """
+
+        :param path_from_main_parent:
+        :return:
+        """
 
         affected_node = path_from_main_parent[-1]
 
@@ -206,8 +217,10 @@ class AbstractTrie:
         while path_from_main_parent:
 
             if child == affected_node or not child.prefix_flag and not child.left_child and not child.right_child:
+
                 if parent.right_child == child:
                     parent.right_child = None
+
                 else:
                     parent.left_child = None
 
@@ -222,3 +235,36 @@ class AbstractTrie:
                 continue
 
             break
+
+    @staticmethod
+    def is_exist(parent_node: Node, node_value: str) -> bool:
+        """Check if current value is already exists in binary trie.
+        :param parent_node: parent node for added value
+        :param node_value: str representation of node
+        :return: False if node not exists in binary trie, True otherwise
+        """
+        current_node = parent_node
+
+        for curr_len, bit in enumerate(node_value, 1):
+
+            if bit == '0':
+                # add node to trie as a left child
+                if curr_len == len(node_value) and current_node.left_child:
+                    return True
+
+                if curr_len < len(node_value) and not current_node.left_child:
+                    return False
+
+                current_node = current_node.left_child
+
+            else:
+                # add node to trie as a right child
+                if curr_len == len(node_value) and current_node.right_child:
+                    return True
+
+                if curr_len < len(node_value) and not current_node.right_child:
+                    return False
+
+                current_node = current_node.right_child
+
+        return False
