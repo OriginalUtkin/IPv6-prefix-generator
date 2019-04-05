@@ -10,7 +10,7 @@ class RandomGenerator:
     binary_trie = attr.ib(type=Trie)
     distribution_plan = attr.ib(factory=dict, type=dict)
 
-    def random_generate(self):
+    def random_generate(self) -> None:
         IANA = '0010'
 
         for org_level in self.distribution_plan:

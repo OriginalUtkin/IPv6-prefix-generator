@@ -23,8 +23,8 @@ class Helper(AbstractHelper):
             else:
                 org_lvl = self.get_organisation_level_by_depth(prefix_depth)
 
-                if not org_lvl or org_lvl == 0:
-                    self.distribution_random_plan[org_lvl]['generated_info'][prefix_depth] = new_prefix_num
+                if org_lvl == 1:
+                    self.distribution_random_plan[0]['generated_info'][prefix_depth] = new_prefix_num
 
                 else:
                     self.distribution_plan[org_lvl]['generated_info'][prefix_depth] = new_prefix_num

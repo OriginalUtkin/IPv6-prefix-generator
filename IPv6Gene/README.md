@@ -1,18 +1,20 @@
 ## About
 This is improved version of V6Gene generator. 
 
+* There are no exist allocation politics for prefixes with length less than 12. Generator can't generate them and can't generate new prefixes from them. But this prefixes could be found in seed prefix file and could be added to the binary trie during construct binary trie process.
+
 * Now random generate process is used just for generating `RIR` prefixes and 
-called at the start  of the program. 
+called at the start  of the program. All randomly generated prefixes were added to trie and could be used in trie traversal generating phase as well.
 
 * After that trie traversal generating process is started. 
  
-* Unlike V6gene , generator can generate prefixes from prefixes that were added to trie during generating process. 
+* Unlike V6gene , new version of generator can generate prefixes from prefixes that were added to trie during generating process. 
 
 * New `EU` prefixes could be generated from `LIR` or `ISP` prefixes.
 
-* This version of generator works better with level distribution parameter.
+* `level_distribution` input argument was simplified. Now would be enough just specify required maximum trie level using `max_level` input argument that is used instead of `level_distribution`.
 
-* `level_distribution` was changed to `max_level` and just specify maximum possible level for trie.
+* `RGR` input argument was removed. Script automatically calculate number of prefixes that will be generated randomly according to `depth_distribution`
 
 ## Usage 
 * CLI
@@ -22,12 +24,12 @@ python3 IPv6Gene.py --depth_distribution 0:<int>,1:<int>,2:<int>...64:<int> --in
  or using files with specified depth distribution
  
 
-## Input parameters
+## Input arguments
 - `depth_distribution` - output (requested) depth distribution
 
-- `input` - seed prefix file which contains prefixes which will be added to binary trie
+- `input` - seed prefix file which contains prefixes which will be added to binary trie and will be used for generating new prefixes
 
-- `prefix_quantity` - number of prefixes that will be generating 
+- `prefix_quantity` - number of prefixes after generating process in binary trie
 
 - `max_level` - specify max possible level for binary trie
 

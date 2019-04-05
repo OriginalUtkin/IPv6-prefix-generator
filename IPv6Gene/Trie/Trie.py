@@ -18,7 +18,7 @@ class Trie(AbstractTrie):
     Help = attr.ib(default=None, type=Helper)
     tmp_var = 0
     nodes = {
-        0: [], 1: [], 2: [], 3: [],
+        1: [], 2: [], 3: [], 4: [],
     }
 
     def __attrs_post_init__(self) -> None:
@@ -29,14 +29,15 @@ class Trie(AbstractTrie):
     def add_node(self, node_value: str, parent_node: Optional[Node] = None, creating_phase: bool = True) -> Node:
         """Add new node to binary trie.
 
-        :exception  PrefixAlreadyExists in case if new node already exists in binary trie. Method isn't called in
+        :raises  PrefixAlreadyExists in case if new node already exists in binary trie. Method isn't called in
                     creating phase
-        :exception  MaximumLevelException in case if after adding a new node to binary trie level changes and greater than max possible value
+        :raises  MaximumLevelException in case if after adding a new node to binary trie level changes and greater than max possible value
 
         :param node_value: string; string representation of node
         :param parent_node None or Node; node object which represent the parent for added node
         :param creating_phase boolean; signalize phase of generator when node is added while binary trie is initializing
-        :return: None
+
+        :return: constructed node object
         """
         if not parent_node:
             current_node = self.root_node
@@ -104,7 +105,7 @@ class Trie(AbstractTrie):
 
         org_level = self.Help.get_organisation_level_by_depth(current_node.depth)
 
-        if not org_level and creating_phase:
+        if org_level == 0 and creating_phase:
             return current_node
 
         self.nodes[org_level].append(current_node)
@@ -112,7 +113,7 @@ class Trie(AbstractTrie):
         return current_node
 
     def generate_prefixes(self) -> None:
-        """Generate new prefixes.
+        """Generate new prefixes using constructed binary trie.
 
         1)Going through distribution plan which was created in initialization phase and get single organisation level.
 
@@ -122,7 +123,7 @@ class Trie(AbstractTrie):
         node will be added to set of already used nodes.
 
         4)In case that all nodes were used and generating process from all of them isn't possible due to :exception
-        MaximumLevelException, end script with the following error message.
+        MaximumLevelException, end script with the error message.
 
         5) Otherwise, append new node to the particular organisation level in nodes variable and allow generating from
         it.
@@ -135,12 +136,15 @@ class Trie(AbstractTrie):
         """
 
         for plan_entry in self.Help.distribution_plan:
-            print(f"[GENERATING PROCESS]: Currently prefixes is being generated on interval:{plan_entry.get('interval')}")
 
             used_nodes = set()
 
             if len(plan_entry["generated_info"]) == 0:
                 continue
+
+            print(
+                f"[GENERATING PROCESS]: Currently prefixes is being generated on interval:{plan_entry.get('interval')}"
+            )
 
             while plan_entry["generated_info"]:
                 while True:
@@ -149,8 +153,12 @@ class Trie(AbstractTrie):
 
                     org_level = self.Help.get_organisation_level_by_depth(new_prefix_len) - 1
 
-                    if org_level + 1 == 3:
-                        self.nodes[2] += self.nodes[1]
+                    if org_level + 1 == 4:
+                        self.nodes[3] += self.nodes[2]
+
+                    if not len(self.nodes[org_level]):
+                        raise ValueError ("New prefixes cannot be generated because there is no prefix nodes on the "
+                                          "previous organisation level. Please, change depth_distribution")
 
                     node_index = random.randint(0, len(self.nodes[org_level]) - 1)
 

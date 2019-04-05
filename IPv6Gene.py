@@ -169,7 +169,7 @@ if __name__ == "__main__":
 
     input_prefixes = read_seed_file(parsed_arguments['input'])
 
-    print(f"[INFO] Number of seed prefixes {len(set(input_prefixes))}")
+
 
     generator = V6Generator(
         prefix_quantity=parsed_arguments['prefix_quantity'],
@@ -177,15 +177,20 @@ if __name__ == "__main__":
         max_level=parsed_arguments['max_level'],
         input_prefixes=input_prefixes
     )
-    print(f"Start binary trie level is {generator._binary_trie.trie_level}")
+    print(f"[INFO] Number of prefixes in seed input file is {len(set(input_prefixes))}")
+    print(f"[INFO] Number of prefixes in constructed binary trie is {generator.get_binary_trie_prefixes_num()}")
+    print(f"[INFO] Constructed binary trie depth is {generator.get_binary_trie_depth()}")
+    print(f"[INFO] Constructed binary trie level is {generator.get_binary_trie_level()}")
 
     new_prefixes = generator.start_generating()
 
     for prefix in new_prefixes:
         print(prefix)
 
-    print(f"Number of prefixes after generating {len(new_prefixes)}")
-    print(f"Result binary trie level is {generator._binary_trie.trie_level}")
+    print(f"[INFO] Number of prefixes after generating {len(new_prefixes)}")
+    print(f"[INFO] Number of prefixes in constructed binary trie is {generator.get_binary_trie_prefixes_num()}")
+    print(f"[INFO] Constructed binary trie depth is {generator.get_binary_trie_depth()}")
+    print(f"[INFO] Constructed binary trie level is {generator.get_binary_trie_level()}")
 
     if parsed_arguments['output']:
         with open(parsed_arguments['output'], 'a') as file:

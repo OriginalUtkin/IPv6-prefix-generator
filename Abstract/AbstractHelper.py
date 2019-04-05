@@ -11,10 +11,11 @@ class AbstractHelper:
     start_depth_distribution = attr.ib(factory=dict, type=dict)
     final_depth_distribution = attr.ib(factory=dict, type=dict)
 
-    _intervals = {0: [12, 32], 1: [32, 48], 2: [48, 64], 3: [64, 65]}
+    _intervals = {0: [0, 12], 1: [12, 32], 2: [32, 48], 3: [48, 64], 4: [64, 65]}
 
     # Helper structure which contains a number of prefixes on organisation levels for trie traversal generating process
     distribution_plan = [
+        {'interval': [0, 12], 'generated_info': {}},
         {'interval': [12, 32], 'generated_info': {}},
         {'interval': [32, 48], 'generated_info': {}},
         {'interval': [48, 64], 'generated_info': {}},
@@ -30,9 +31,10 @@ class AbstractHelper:
         raise NotImplementedError
 
     @staticmethod
-    def group_by_length(distribution: Dict) -> List:
+    def group_by_length(distribution: Dict) -> List[Dict]:
 
         statistic = [
+            {'interval': [0, 12], 'prefixes_num': 0},
             {'interval': [12, 32], 'prefixes_num': 0},
             {'interval': [32, 48], 'prefixes_num': 0},
             {'interval': [48, 64], 'prefixes_num': 0},
