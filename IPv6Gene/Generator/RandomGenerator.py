@@ -1,8 +1,8 @@
 import attr
 
 from IPv6Gene.Trie import Trie
-from Exceptions.Exceptions import PrefixAlreadyExists, MaximumLevelException
-from Abstract.AbstractHelper import AbstractHelper
+from Common.Exceptions.Exceptions import PrefixAlreadyExists, MaximumLevelException
+from Common.Abstract.AbstractHelper import AbstractHelper
 
 
 @attr.s

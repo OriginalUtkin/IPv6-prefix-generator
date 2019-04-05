@@ -1,8 +1,8 @@
 import attr
 
 from typing import List, Dict, Optional
-from Abstract.Node import Node
-from Exceptions.Exceptions import MaximumLevelException
+from Common.Trie.Node.Node import Node
+from Common.Exceptions.Exceptions import MaximumLevelException
 
 
 @attr.s

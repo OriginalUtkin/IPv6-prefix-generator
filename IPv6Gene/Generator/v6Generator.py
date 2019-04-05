@@ -1,12 +1,12 @@
 import attr
 import matplotlib.pyplot as plt
 
-from Abstract.AbstractHelper import AbstractHelper
-from Abstract.AbstractTrie import AbstractTrie
+from Common.Abstract.AbstractHelper import AbstractHelper
+from Common.Abstract.AbstractTrie import AbstractTrie
 from IPv6Gene.Trie import Trie
 from IPv6Gene.Generator.Helper import Helper
 from IPv6Gene.Generator.RandomGenerator import RandomGenerator
-from Converter.Converter import Converter
+from Common.Converter.Converter import Converter
 from typing import Dict, List
 
 

@@ -1,11 +1,11 @@
 import attr
 import random
 
-from Abstract.Node import Node
-from Abstract.AbstractHelper import AbstractHelper
-from Abstract.AbstractTrie import AbstractTrie
+from Common.Trie.Node.Node import Node
+from Common.Abstract.AbstractHelper import AbstractHelper
+from Common.Abstract.AbstractTrie import AbstractTrie
 from IPv6Gene.Generator.Helper import Helper
-from Exceptions.Exceptions import PrefixAlreadyExists, MaximumLevelException, CannotGenerateDueMaximumLevel
+from Common.Exceptions.Exceptions import PrefixAlreadyExists, MaximumLevelException, CannotGenerateDueMaximumLevel
 
 from typing import Optional
 

@@ -1,4 +1,4 @@
-from Abstract.AbstractHelper import AbstractHelper
+from Common.Abstract.AbstractHelper import AbstractHelper
 
 
 class Helper(AbstractHelper):

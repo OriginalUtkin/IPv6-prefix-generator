@@ -1,7 +1,8 @@
-from IPv6Gene.Generator.v6Generator import V6Generator
-from  Abstract.AbstractHelper import AbstractHelper
 import argparse
 import ipaddress
+
+from IPv6Gene.Generator.v6Generator import V6Generator
+from Common.Abstract.AbstractHelper import AbstractHelper
 
 
 def validate_file(path, modifier):
