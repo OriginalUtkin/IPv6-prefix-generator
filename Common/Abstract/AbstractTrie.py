@@ -45,55 +45,15 @@ class AbstractTrie:
     def add_node(self, node_value: str, parent_node: Optional[Node] = None, creating_phase: bool = True) -> Node:
         raise NotImplementedError
 
-    def recalculate_level(self, node: Node, phase='Creating') -> int:
-        """Recalculate level all parent and sub-parent prefixes after adding new leaf prefix to binary trie.
-        Separated into two phases:
-        1) Creating phase- means creating binary trie using seed prefix file. At this moment, no info about max possible
-        level for trie. levels are calculated and automatically applied for all nodes in :param path
-
-        2)Generating phase - trie has info about max possible level from input parameter level_distribution. In this
-        case, all nodes levels are stored in temporary structure. At first, need to check if after adding new node to
-        binary trie all prefixes in :param path structure have level less or equal to max_possible_level. If so, new
-        node can be added to binary trie. Else function will raise exception
-
-        :param node: Node; added node to trie
-        :param phase: string; currently generator phase
-        :return: None
-        """
-
-        if phase is 'Creating':
-            full_path = AbstractTrie.get_full_path(node)
-
-            path_parent_level = AbstractTrie.recalculating_process(full_path)
-
-            return path_parent_level
-
-        if phase is 'Generating':
-            full_path = AbstractTrie.get_full_path(node, include_current=True)
-
-            tmp_path = [i.level for i in full_path]
-            AbstractTrie.recalculating_process_tmp(tmp_path)
-
-            max_level = max(tmp_path, key=int)
-
-            if max_level > self.max_possible_level:
-                full_path[-1].left_child = None
-                full_path[-1].righ_child = None
-
-                raise MaximumLevelException("Level after generate new prefix is greater than max possible trie level")
-
-            path_parent_level = AbstractTrie.recalculating_process(full_path)
-
-            return path_parent_level
-
     def get_depths(self, level) -> List:
         return [key for key in self._prefix_leaf_nodes.keys() if key < level]
 
     @staticmethod
-    def get_full_path(node: Node, include_current=False) -> List:
-        """Return full prefix nodes path for current node.
+    def get_full_path(node: Node, include_current=False) -> List[Node]:
+        """Return full prefix nodes path for :param Node current node.
 
-        Method is used for creating prefix path for current :param node and recalculate level for previous nodes.
+        Method is used for creating prefix path for current :param node. Result list contains all previous prefix nodes.
+        Result list could be used for change levels all of this nodes
         :param node: Node; node object from binary trie
         :param include_current: boolean; Signalize if current node will be added to full prefix nodes path.
         :return: list; list with all previous (and current if include flag is set as True) prefix nodes for :param node
@@ -110,48 +70,6 @@ class AbstractTrie:
             curr = curr.path
 
         return full_path[::-1]
-
-    @staticmethod
-    def recalculating_process(path) -> int:
-        """Recalculate level for all prefix nodes in path variable.
-
-        :param path: list which contains previous prefix nodes
-        :return: None; method changes level field for particular nodes
-        """
-        for i in range(len(path) - 1, -1, -1):
-
-            # adding new child to leaf
-            if i == len(path) - 1:
-                if path[i].level == 0:
-                    path[i].level = 1
-
-                else:
-                    continue
-
-            # adding new child to node, which already has child
-            else:
-                if path[i].level < path[i + 1].level + 1:
-                    path[i].level += 1
-
-        return path[-1].level
-
-    @staticmethod
-    def recalculating_process_tmp(path) -> None:
-
-        for i in range(len(path) - 1, -1, -1):
-
-            # adding new child to leaf
-            if i == len(path) - 1:
-                if path[i] == 0:
-                    path[i] = 1
-
-                else:
-                    continue
-
-            # adding new child to node, which already has child
-            else:
-                if path[i] < path[i + 1] + 1:
-                    path[i] += 1
 
     @staticmethod
     def construct_binary_representation(nodes) -> str:

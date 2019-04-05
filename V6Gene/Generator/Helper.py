@@ -1,9 +1,11 @@
 from typing import Dict, List
+from Common.Abstract.AbstractHelper import AbstractHelper
 import attr
 import random
 import ipaddress
 
 
+# TODO: Implement AbstractHelper interface
 class Helper:
 
     start_depth_distribution = attr.ib(factory=dict, type=dict)
@@ -131,28 +133,28 @@ class Helper:
                 new_prefixes += prefixes_num
 
             # calculate how many prefixes will be generated from nodes on this level
-            test = float(new_prefixes / leafs)
+            leafs = float(new_prefixes / leafs)
 
             # number of leaf prefixes the same as number of prefixes on following organisation level
-            if test == 1:
+            if leafs == 1:
                 self.generating_strategy[i]['generating_strategy'] = [1 for _ in range(leafs)]
 
                 continue
 
             # Just one leaf prefix on previous organisation level
-            if test == new_prefixes:
+            if leafs == new_prefixes:
                 self.generating_strategy[i]['generating_strategy'] = [new_prefixes]
 
                 continue
 
-            if test > 1:
-                tmp = [int(test) for _ in range(leafs - 1)]
-                tmp.append(new_prefixes - len(tmp)*int(test))
+            if leafs > 1:
+                tmp = [int(leafs) for _ in range(leafs - 1)]
+                tmp.append(new_prefixes - len(tmp)*int(leafs))
                 self.generating_strategy[i]['generating_strategy'] = tmp
 
                 continue
 
-            if test < 1:
+            if leafs < 1:
                 self.generating_strategy[i]['generating_strategy'] = [1 for _ in range(new_prefixes)]
 
                 continue

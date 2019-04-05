@@ -1,23 +1,15 @@
 import attr
 
-from V6Gene.Trie.Node import Node
+from Common.Trie.Node.Node import Node
 from V6Gene.Generator.Helper import Helper
-from V6Gene.Exceptions.Exceptions import PrefixAlreadyExists, MaximumLevelException
+from Common.Exceptions.Exceptions import PrefixAlreadyExists, MaximumLevelException
+from Common.Abstract.AbstractTrie import AbstractTrie
 
 from typing import Dict, List, Optional
 
 
 @attr.s
-class Trie:
-    root_node = attr.ib(default=Node(None, 0), type=Node)
-    max_possible_level = attr.ib(default=7, type=int)
-
-    _init_max_level = attr.ib(default=0, type=int)
-    _max_trie_level = attr.ib(default=0, type=int)
-    _generated_prefixes = attr.ib(factory=list, type=list)
-    _trie_depth = attr.ib(default=0, type=int)
-    _prefix_leaf_nodes = attr.ib(factory=dict, type=dict)
-    _prefix_nodes = attr.ib(factory=dict, type=dict)
+class Trie(AbstractTrie):
     _level_distribution = attr.ib(factory=dict, type=dict)
 
     Help = attr.ib(default=None, type=Helper)
@@ -29,10 +21,6 @@ class Trie:
 
         for value in range(6):
             self._level_distribution[value] = 0
-
-    @property
-    def trie_level(self) -> int:
-        return self._max_trie_level
 
     @property
     def level_distribution(self) -> int:
@@ -47,14 +35,6 @@ class Trie:
         return self._generated_prefixes
 
     @property
-    def trie_depth(self) -> int:
-        """Return trie depth.
-
-        :return: int; trie depth
-        """
-        return self._trie_depth
-
-    @property
     def prefix_leaf_nodes(self) -> Dict:
         """Return all leaf prefixes.
         For set this parameter call a preorder method with :param action as 'statistic'
@@ -62,20 +42,6 @@ class Trie:
         :return: dictionary; dict in format {depth: num. leaf node prefixes}
         """
         return self._prefix_leaf_nodes
-
-    @property
-    def prefix_nodes(self) -> Dict:
-        """Return all prefix nodes by level.
-        Automatically updated when new node are added into trie. Return depth values where num. of prefix nodes are
-        greater than zero
-
-        :return: dictionary; dict in format {depth: num. prefixes nodes}
-        """
-        return {key: value for key, value in self._prefix_nodes.items() if value > 0}
-
-    @property
-    def full_prefix_nodes(self) -> list:
-        return self._prefix_nodes
 
     @property
     def init_max_level(self):
@@ -96,16 +62,18 @@ class Trie:
         self.root_node.prefix_flag = True
         self._prefix_nodes[0] += 1
 
-    def add_node(self, node_value: str, parent_node: Optional[Node] = None, creating: bool = True) -> Node:
+    def add_node(self, node_value: str, parent_node: Optional[Node] = None, creating_phase: bool = True) -> Node:
         """Add new node to binary trie.
 
-        :exception  PrefixAlreadyExists in case if new node already exists in binary trie
-        :exception  MaximumLevelException in case if after adding a new node to binary trie level changes and greater than max possible value
+        :raises  PrefixAlreadyExists in case if new node already exists in binary trie. Method isn't called in
+                    creating phase
+        :raises  MaximumLevelException in case if after adding a new node to binary trie level changes and greater than max possible value
 
         :param node_value: string; string representation of node
         :param parent_node None or Node; node object which represent the parent for added node
-        :param creating boolean; allow generating new nodes from added node
-        :return: None
+        :param creating_phase boolean; signalize phase of generator when node is added while binary trie is initializing
+
+        :return: constructed node object
         """
         if not parent_node:
             current_node = self.root_node
@@ -113,16 +81,14 @@ class Trie:
             current_node = parent_node
 
         path = []
+        path_from_parent_node = list()
+
+        if not creating_phase and AbstractTrie.is_exist(current_node, node_value):
+            raise PrefixAlreadyExists
 
         for curr_len, bit in enumerate(node_value, 1):
 
-            if current_node.level > self._max_trie_level:
-                self._max_trie_level = current_node.level
-
             if bit == '0':
-                # add node to trie as a left child
-                if curr_len == len(node_value) and current_node.left_child:
-                    raise PrefixAlreadyExists("Value already exists in binary trie")
 
                 if not current_node.left_child:
                     current_node.left_child = Node(bit, current_node.depth + 1)
@@ -130,12 +96,12 @@ class Trie:
                 if current_node.prefix_flag:
                     path.append(current_node)
 
+                if not creating_phase:
+                    path_from_parent_node.append(current_node)
+
                 current_node = current_node.left_child
 
             else:
-                # add node to trie as a right child
-                if curr_len == len(node_value) and current_node.right_child:
-                    raise PrefixAlreadyExists("Value already exists in binary trie")
 
                 if not current_node.right_child:
                     current_node.right_child = Node(bit, current_node.depth + 1)
@@ -143,26 +109,35 @@ class Trie:
                 if current_node.prefix_flag:
                     path.append(current_node)
 
+                if not creating_phase:
+                    path_from_parent_node.append(current_node)
+
                 current_node = current_node.right_child
 
         if path:
             current_node.path = path[-1]
 
-            try:
-                if not creating:
-                    self.recalculate_level(current_node.path, phase='Generating')
+        full_prefix_path = AbstractTrie.get_full_path(current_node, include_current=True)
 
-                else:
-                    self.recalculate_level(current_node)
+        if len(full_prefix_path) - 1 > full_prefix_path[0].level:
+            if len(full_prefix_path) > self.max_possible_level and not creating_phase:
+                AbstractTrie.delete_node_from_trie(path_from_parent_node)
+                raise MaximumLevelException
 
-            except MaximumLevelException:
-                raise
+            for prefix_index in range(len(full_prefix_path)):
+                full_prefix_path[prefix_index].level = len(full_prefix_path) - 1 - prefix_index
+
+        if self._max_trie_level < len(full_prefix_path) - 1:
+            self._max_trie_level = len(full_prefix_path) - 1
+            print(self._max_trie_level)
 
         current_node.prefix_flag = True
         self._prefix_nodes[current_node.depth] += 1
 
-        if not creating:
-            current_node.allow_generate = creating
+        current_node.generated = creating_phase
+
+        if not creating_phase:
+            current_node.allow_generate = creating_phase
 
         if current_node.depth > self._trie_depth:
             self._trie_depth = current_node.depth
@@ -196,9 +171,6 @@ class Trie:
 
             self.preorder(node.left_child, action)
             self.preorder(node.right_child, action)
-
-    def get_depths(self, level):
-        return [key for key in self._prefix_leaf_nodes.keys() if key < level]
 
     def _generate_prefix(self, node: Node):
         # We have current node depth. Investigate which organisation level is is.
@@ -245,129 +217,3 @@ class Trie:
 
             else:
                 self.Help.decrease_plan_value(prefix_depth_level+1, prefix_depth)
-
-    def get_full_path(self, node: Node, include_current=False) -> List:
-        """Return full prefix nodes path for current node.
-
-        Method is used for creating prefix path for current :param node and recalculate level for previous nodes.
-        :param node: Node; node object from binary trie
-        :param include_current: boolean; Signalize if current node will be added to full prefix nodes path.
-        :return: list; list with all previous (and current if include flag is set as True) prefix nodes for :param node
-        """
-        full_path = []
-
-        if include_current:
-            full_path.append(node)
-
-        curr = node.path
-
-        while curr:
-            full_path.append(curr)
-            curr = curr.tie_path
-
-        return full_path[::-1]
-
-    def recalculate_level(self, node: Node, phase='Creating'):
-        """Recalculate level all parent and sub-parent prefixes after adding new leaf prefix to binary trie.
-        Separated into two phases:
-        1) Creating phase- means creating binary trie using seed prefix file. At this moment, no info about max possible
-        level for trie. levels are calculated and automatically applied for all nodes in :param path
-
-        2)Generating phase - trie has info about max possible level from input parameter level_distribution. In this
-        case, all nodes levels are stored in temporary structure. At first, need to check if after adding new node to
-        binary trie all prefixes in :param path structure have level less or equal to max_possible_level. If so, new
-        node can be added to binary trie. Else function will raise exception
-
-        :param node: Node; added node to trie
-        :param phase: string; currently generator phase
-        :return: None
-        """
-
-        if phase is 'Creating':
-            full_path = self.get_full_path(node)
-
-            self.recalculating_process(full_path)
-
-        if phase is 'Generating':
-            full_path = self.get_full_path(node, include_current=True)
-
-            tmp_path = [i.level for i in full_path]
-            self.recalculating_process_tmp(tmp_path)
-
-            max_level = max(tmp_path, key=int)
-
-            if max_level > self.max_possible_level:
-                full_path[-1].left_child = None
-                full_path[-1].righ_child = None
-
-                raise MaximumLevelException("Level after generate new prefix is greater than max possible trie level")
-
-            self.recalculating_process(full_path)
-
-    def recalculating_process(self, path):
-        # TODO: change function logic for using it in generating phase
-        for i in range(len(path)-1, -1, -1):
-
-            # adding new child to leaf
-            if i == len(path) - 1:
-                if path[i].level == 0:
-                    path[i].level = 1
-
-                else:
-                    continue
-
-            # adding new child to node, which already has child
-            else:
-                if path[i].level < path[i + 1].level + 1:
-                    path[i].level += 1
-
-    def recalculating_process_tmp(self, path):
-        # TODO: change function logic for using it in generating phase
-        for i in range(len(path)-1, -1, -1):
-
-            # adding new child to leaf
-            if i == len(path) - 1:
-                if path[i] == 0:
-                    path[i] = 1
-
-                else:
-                    continue
-
-            # adding new child to node, which already has child
-            else:
-                if path[i] < path[i + 1] + 1:
-                    path[i] += 1
-
-    def print_path(self, s):
-        return ''.join([i.node_value for i in s if i.node_value])
-
-    def trie_path(self, node: Node):
-        all_path = []
-        if node is None:
-            return
-
-        s = list()
-        s.append(node)
-
-        tmp = node.left_child
-
-        while s:
-            while tmp:
-                s.append(tmp)
-                tmp = tmp.left_child
-
-            top = s[-1]
-            if top.prefix_flag:
-                all_path.append(self.print_path(s))
-
-            if not top.is_visited:
-                top.is_visited = True
-                tmp = top.right_child
-
-                if tmp is None and top.right_child is None and top.left_child is None:
-                    all_path.append(self.print_path(s))
-                    s.pop()
-            else:
-                s.pop()
-
-        return all_path

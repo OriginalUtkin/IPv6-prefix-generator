@@ -16,7 +16,6 @@ class Trie(AbstractTrie):
     Class that represents binary trie for improved version of generator
     """
     Help = attr.ib(default=None, type=Helper)
-    tmp_var = 0
     nodes = {
         1: [], 2: [], 3: [], 4: [],
     }

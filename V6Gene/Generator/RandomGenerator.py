@@ -1,7 +1,8 @@
 import attr
+
 from V6Gene.Generator.Helper import Helper
 from V6Gene.Trie import Trie
-from V6Gene.Exceptions.Exceptions import PrefixAlreadyExists, MaximumLevelException
+from Common.Exceptions.Exceptions import PrefixAlreadyExists, MaximumLevelException
 
 
 @attr.s
