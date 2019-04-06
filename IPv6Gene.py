@@ -75,13 +75,13 @@ if __name__ == "__main__":
 
     new_prefixes = generator.start_generating()
 
-    for prefix in new_prefixes:
-        print(prefix)
+    # for prefix in new_prefixes:
+    #     print(prefix)
 
     print(f"[INFO] Number of prefixes after generating {len(new_prefixes)}")
     print(f"[INFO] Number of prefixes in constructed binary trie is {generator.get_binary_trie_prefixes_num()}")
-    print(f"[INFO] Constructed binary trie depth is {generator.get_binary_trie_depth()}")
-    print(f"[INFO] Constructed binary trie level is {generator.get_binary_trie_level()}")
+    print(f"[INFO] Binary trie depth after generating is {generator.get_binary_trie_depth()}")
+    print(f"[INFO] Binary trie level after generating is {generator.get_binary_trie_level()}")
 
     if parsed_arguments['output']:
         with open(parsed_arguments['output'], 'a') as file:

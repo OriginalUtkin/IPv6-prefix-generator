@@ -83,7 +83,7 @@ class Trie(AbstractTrie):
         full_prefix_path = AbstractTrie.get_full_path(current_node, include_current=True)
 
         if len(full_prefix_path) - 1 > full_prefix_path[0].level:
-            if len(full_prefix_path) > self.max_possible_level and not creating_phase:
+            if len(full_prefix_path) - 1 > self.max_possible_level and not creating_phase:
                 AbstractTrie.delete_node_from_trie(path_from_parent_node)
                 raise MaximumLevelException
 
@@ -92,12 +92,11 @@ class Trie(AbstractTrie):
 
         if self._max_trie_level < len(full_prefix_path) - 1:
             self._max_trie_level = len(full_prefix_path) - 1
-            print(self._max_trie_level)
 
         current_node.prefix_flag = True
         self._prefix_nodes[current_node.depth] += 1
 
-        current_node.generated = creating_phase
+        current_node.generated = not creating_phase
 
         if current_node.depth > self._trie_depth:
             self._trie_depth = current_node.depth
@@ -137,6 +136,10 @@ class Trie(AbstractTrie):
         for plan_entry in self.Help.distribution_plan:
 
             used_nodes = set()
+            parent_node_level = self.Help.get_organisation_level_by_depth(plan_entry['interval'][0]) - 1
+
+            if parent_node_level == 3:
+                self.nodes[3] += self.nodes[2]
 
             if len(plan_entry["generated_info"]) == 0:
                 continue
@@ -146,45 +149,52 @@ class Trie(AbstractTrie):
             )
 
             while plan_entry["generated_info"]:
-                while True:
+                new_prefix_len = list(plan_entry["generated_info"].keys())[0]
 
-                    new_prefix_len = list(plan_entry["generated_info"].keys())[0]
+                if not len(self.nodes[parent_node_level]):
+                    raise ValueError("New prefixes cannot be generated because there is no prefix nodes on the "
+                                     "previous organisation level. Please, change depth_distribution")
+                attempts = 0
+                node_added = False
 
-                    org_level = self.Help.get_organisation_level_by_depth(new_prefix_len) - 1
+                node_index = random.randint(0, len(self.nodes[parent_node_level]) - 1)
 
-                    if org_level + 1 == 4:
-                        self.nodes[3] += self.nodes[2]
+                while node_index in used_nodes:
+                    node_index = random.randint(0, len(self.nodes[parent_node_level]) - 1)
 
-                    if not len(self.nodes[org_level]):
-                        raise ValueError ("New prefixes cannot be generated because there is no prefix nodes on the "
-                                          "previous organisation level. Please, change depth_distribution")
-
-                    node_index = random.randint(0, len(self.nodes[org_level]) - 1)
+                while attempts < 5:
 
                     try:
 
-                        new_bits = AbstractHelper.generate_new_bits(self.nodes[org_level][node_index].depth, new_prefix_len)
-                        self.add_node(new_bits, parent_node=self.nodes[org_level][node_index], creating_phase=False)
-                        used_nodes.clear()
+                        new_bits = AbstractHelper.generate_new_bits(self.nodes[parent_node_level][node_index].depth, new_prefix_len)
+                        self.add_node(new_bits, parent_node=self.nodes[parent_node_level][node_index], creating_phase=False)
+                        node_added = True
+
                         break
 
                     except PrefixAlreadyExists:
-                        continue
+                        break
 
                     except MaximumLevelException:
+                        attempts += 1
 
-                        used_nodes.add(node_index)
+                        if attempts >= 5:
+                            used_nodes.add(node_index)
+                            break
 
-                        if len(used_nodes) == len(self.nodes[org_level]):
+                        if len(used_nodes) == len(self.nodes[parent_node_level]):
                             raise CannotGenerateDueMaximumLevel("Cannot generate prefix from any prefix in trie "
                                                                 "(level always is great than maximum possible level)")
-
                         continue
 
-                # decide if organisation level should be removed from distributing plan
-                if plan_entry["generated_info"][new_prefix_len] - 1 == 0:
-                    del self.Help.distribution_plan[org_level+1]["generated_info"][new_prefix_len]
+                if node_added:
+                    # decide if organisation level should be removed from distributing plan
+                    if plan_entry["generated_info"][new_prefix_len] - 1 == 0:
+                        del self.Help.distribution_plan[parent_node_level+1]["generated_info"][new_prefix_len]
 
-                else:
-                    curr_values = self.Help.distribution_plan[org_level+1]["generated_info"][new_prefix_len]
-                    self.Help.distribution_plan[org_level + 1]["generated_info"][new_prefix_len] = curr_values - 1
+                    else:
+                        curr_values = self.Help.distribution_plan[parent_node_level+1]["generated_info"][new_prefix_len]
+                        self.Help.distribution_plan[parent_node_level + 1]["generated_info"][new_prefix_len] = curr_values - 1
+            print(len(used_nodes))
+
+

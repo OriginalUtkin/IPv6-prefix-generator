@@ -1,26 +1,12 @@
 from typing import Dict, List
 from Common.Abstract.AbstractHelper import AbstractHelper
 import attr
-import random
-import ipaddress
 
 
 # TODO: Implement AbstractHelper interface
-class Helper:
+class Helper(AbstractHelper):
 
-    start_depth_distribution = attr.ib(factory=dict, type=dict)
-    final_depth_distribution = attr.ib(factory=dict, type=dict)
     leafs_prefixes = attr.ib(factory=dict, type=dict)
-
-    _intervals = {0: [12, 32], 1: [32, 48], 2: [48, 64], 3: [64, 65]}
-
-    # Helper structure which contains a number of prefixes on organisation levels for trie traversal generating process
-    distribution_plan = [
-        {'interval': [12, 32], 'generated_info': {}},
-        {'interval': [32, 48], 'generated_info': {}},
-        {'interval': [48, 64], 'generated_info': {}},
-        {'interval': [64, 65], 'generated_info': {}}
-    ]
 
     # Helper structure which contains a number of prefixes on organisation levels for random generating process
     distribution_random_plan = [
@@ -44,7 +30,7 @@ class Helper:
         """
         for prefix_depth, prefix_num in self.final_depth_distribution.items():
 
-            new_prefix_num = prefix_num - self.start_depth_distribution.get(prefix_depth, 0)
+            new_prefix_num = prefix_num - self.start_depth_distribution.get(prefix_depth)
 
             # the number of prefixes the same as at the start
             if new_prefix_num == 0:
@@ -137,7 +123,7 @@ class Helper:
 
             # number of leaf prefixes the same as number of prefixes on following organisation level
             if leafs == 1:
-                self.generating_strategy[i]['generating_strategy'] = [1 for _ in range(leafs)]
+                self.generating_strategy[i]['generating_strategy'] = [1 for _ in range(int(leafs))]
 
                 continue
 
@@ -148,7 +134,7 @@ class Helper:
                 continue
 
             if leafs > 1:
-                tmp = [int(leafs) for _ in range(leafs - 1)]
+                tmp = [int(leafs) for _ in range(int(leafs) - 1)]
                 tmp.append(new_prefixes - len(tmp)*int(leafs))
                 self.generating_strategy[i]['generating_strategy'] = tmp
 
@@ -158,61 +144,3 @@ class Helper:
                 self.generating_strategy[i]['generating_strategy'] = [1 for _ in range(new_prefixes)]
 
                 continue
-
-    def group_by_length(self, distribution: Dict) -> List:
-
-        statistic = [
-            {'interval': [12, 32], 'prefixes_num': 0},
-            {'interval': [32, 48], 'prefixes_num': 0},
-            {'interval': [48, 64], 'prefixes_num': 0},
-            {'interval': [64, 65], 'prefixes_num': 0}
-        ]
-
-        for i in range(len(statistic)):
-
-            prefixes_in_depth = 0
-
-            for j in range(statistic[i]['interval'][0], statistic[i]['interval'][1]):
-                prefixes_in_depth += distribution.get(j, 0)
-
-            statistic[i]['prefixes_num'] = prefixes_in_depth
-
-        return statistic
-
-    @staticmethod
-    def generate_new_bits(current_prefix_depth: int, new_prefix_depth: int) -> str:
-        """Generate new random bits for current prefix.
-
-        :param current_prefix_depth: integer; current prefix len in trie
-        :param new_prefix_depth: integer; new prefix len which is needed
-        :return: string; new generated bits (0 and 1) in string form
-        """
-        generate_num = new_prefix_depth - current_prefix_depth
-
-        generated_sequence = random.getrandbits(generate_num)
-
-        binary_rep = ("{0:b}".format(generated_sequence))
-
-        if len(binary_rep) < generate_num:
-            additional_bits = generate_num - len(binary_rep)
-
-            for i in range(additional_bits):
-                binary_rep = '0' + binary_rep
-
-        return binary_rep
-
-    @staticmethod
-    def get_binary_prefix(prefix_string: str) -> str:
-        """Convert hexadecimal prefix representation to binary representation.
-
-        :param prefix_string: string; string contains hexadecimal representation of prefix
-        :return: string; binary representation of current prefix without additional 0 at the end
-        """
-        parsed_address = {'prefix': prefix_string[:prefix_string.find('/')],
-                          'length': int(prefix_string[prefix_string.find('/') + 1:])}
-
-        hex_prefix = ipaddress.IPv6Address(parsed_address['prefix'])
-
-        binary_prefix = "".join(format(x, '08b') for x in bytearray(hex_prefix.packed))
-
-        return binary_prefix[:parsed_address['length']]

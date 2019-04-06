@@ -11,6 +11,9 @@ from typing import Dict, List, Optional
 @attr.s
 class Trie(AbstractTrie):
     _level_distribution = attr.ib(factory=dict, type=dict)
+    _trie_traversal_generated = attr.ib(default=0, type=int)
+    _maximum_trie_traversal_generated = attr.ib(default=0, type=int)
+    used_nodes = list()
 
     Help = attr.ib(default=None, type=Helper)
 
@@ -120,7 +123,7 @@ class Trie(AbstractTrie):
         full_prefix_path = AbstractTrie.get_full_path(current_node, include_current=True)
 
         if len(full_prefix_path) - 1 > full_prefix_path[0].level:
-            if len(full_prefix_path) > self.max_possible_level and not creating_phase:
+            if len(full_prefix_path) - 1 > self.max_possible_level and not creating_phase:
                 AbstractTrie.delete_node_from_trie(path_from_parent_node)
                 raise MaximumLevelException
 
@@ -129,15 +132,12 @@ class Trie(AbstractTrie):
 
         if self._max_trie_level < len(full_prefix_path) - 1:
             self._max_trie_level = len(full_prefix_path) - 1
-            print(self._max_trie_level)
 
         current_node.prefix_flag = True
         self._prefix_nodes[current_node.depth] += 1
 
-        current_node.generated = creating_phase
-
         if not creating_phase:
-            current_node.allow_generate = creating_phase
+            current_node.allow_generate = False
 
         if current_node.depth > self._trie_depth:
             self._trie_depth = current_node.depth
@@ -147,14 +147,6 @@ class Trie(AbstractTrie):
     def preorder(self, node: Node, action: str) -> None:
 
         if node:
-
-            if action is "statistic" and node.prefix_flag:
-
-                if not self._level_distribution.get(node.level):
-                    self._level_distribution[node.level] = 1
-
-                else:
-                    self._level_distribution[node.level] += 1
 
             if not node.left_child and not node.right_child and node.prefix_flag:  # We found a leaf node
 
@@ -167,53 +159,51 @@ class Trie(AbstractTrie):
                         self._prefix_leaf_nodes[node.depth] += 1
 
                 if action is "generate" and node.allow_generate:
+                    # leaf node was found. Start generating process
                     self._generate_prefix(node)
+
+                    # Don't allow generate other nodes from node which was already used for generating
+                    node.allow_generate = False
+
+                    print(node in self.used_nodes)
+                    self.used_nodes.append(node)
 
             self.preorder(node.left_child, action)
             self.preorder(node.right_child, action)
 
     def _generate_prefix(self, node: Node):
-        # We have current node depth. Investigate which organisation level is is.
+        # We have current node depth. Investigate which organisation level it is.
         # After that, check next level and take some prefix from it.
+
         prefix_depth_level = self.Help.get_organisation_level_by_depth(node.depth)
 
-        # Cannot generate from prefix which has len as 64
-        if prefix_depth_level == self.Help.max_organisation_depth():
-            return None
+        # selected prefix has a length 64. This prefix cannot generate any other
+        if prefix_depth_level == 4:
+            return
 
-        # No prefixes on following depth level
-        if not self.Help.get_dd_plan(prefix_depth_level + 1):
-            return None
+        while self.Help.distribution_plan[prefix_depth_level + 1]['generated_info']:
 
-        # find out, how many prefixes could be generated from current node
-        number_of_prefixes_from_this_node = self.Help.get_gs(prefix_depth_level)
+            if self._trie_traversal_generated == self._maximum_trie_traversal_generated:
+                return
 
-        for _ in range(number_of_prefixes_from_this_node):
+            new_prefix_depth = list(self.Help.distribution_plan[prefix_depth_level + 1]['generated_info'].keys())[0]
+            number_of_generated_prefixes = self.Help.get_plan_values(prefix_depth_level + 1, new_prefix_depth)
 
-            # get prefixes length from next organisation depth level which could be generated from current level
-            generated_info_keys = self.Help.get_plan_keys(prefix_depth_level + 1)
+            try:
+                new_bits = Helper.generate_new_bits(node.depth, new_prefix_depth)
+                self.add_node(new_bits, node, False)
 
-            # No prefixes
-            if not generated_info_keys:
-                return None
+                if number_of_generated_prefixes - 1 == 0:
+                    self.Help.remove_from_plan(prefix_depth_level + 1, new_prefix_depth)
 
-            prefix_depth = generated_info_keys[0]
+                else:
+                    self.Help.decrease_plan_value(prefix_depth_level + 1, new_prefix_depth)
 
-            # get number of prefixes
-            values = self.Help.get_plan_values(prefix_depth_level+1, prefix_depth)
+                self._trie_traversal_generated += 1
+                print(self._trie_traversal_generated)
 
-            while True:
-                try:
-                    new_bits = Helper.generate_new_bits(node.depth, prefix_depth)
-                    self.add_node(new_bits, node, False)
-                    break
+            except PrefixAlreadyExists:
+                break
 
-                except (PrefixAlreadyExists, MaximumLevelException):
-                    continue
-
-            # generate prefix and decrease number of prefixes which should be generated by one
-            if values - 1 == 0:
-                self.Help.remove_from_plan(prefix_depth_level+1, prefix_depth)
-
-            else:
-                self.Help.decrease_plan_value(prefix_depth_level+1, prefix_depth)
+            except MaximumLevelException:
+                break

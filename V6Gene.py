@@ -19,7 +19,7 @@ def validate_rgr(value):
         if value < 0:
             raise argparse.ArgumentTypeError("RGR value should be a non-negative value")
 
-        if value > 100:
+        if value > 1:
             raise argparse.ArgumentTypeError("RGR value can't be greater than 100")
 
         if math.isnan(value) or math.isinf(value):
@@ -27,9 +27,6 @@ def validate_rgr(value):
 
     except ValueError:
         raise
-
-    if value < 1:
-        value *= 100
 
     return value
 
@@ -164,10 +161,18 @@ if __name__ == "__main__":
         input_prefixes=input_prefixes
     )
 
+    print(f"[INFO] Number of prefixes in seed input file is {len(set(input_prefixes))}")
+    print(f"[INFO] Constructed binary trie depth is {generator._binary_trie.trie_depth}")
+    print(f"[INFO] Constructed binary trie level is {generator._binary_trie.trie_level}")
+
     new_prefixes = generator.start_generating()
 
-    for prefix in new_prefixes:
-        print(prefix)
+    # for prefix in new_prefixes:
+    #     print(prefix)
+
+    print(f"[INFO] Number of prefixes after generating {len(new_prefixes)}")
+    print(f"[INFO] Binary trie depth after generating is {generator._binary_trie.trie_depth}")
+    print(f"[INFO] Binary trie level after generating is {generator._binary_trie.trie_level}")
 
     if parsed_arguments['output']:
         with open(parsed_arguments['output'], 'a') as file:
