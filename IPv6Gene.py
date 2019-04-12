@@ -1,8 +1,9 @@
 import argparse
 import sys
-
 from Common.Validator.Validator import InputArgumentsValidator as validate
 from IPv6Gene.Generator.v6Generator import V6Generator
+from memory_profiler import profile
+import time
 
 
 def parse_args():
@@ -34,24 +35,25 @@ def parse_args():
 
     return vars(parser.parse_args())
 
+def generator_start():
 
-if __name__ == "__main__":
-
+    start = time.time()
     try:
         parsed_arguments = parse_args()
 
     except Exception as exc:
         sys.exit(str(exc))
 
-    if not parsed_arguments.get("depth_distribution_path", None) and not parsed_arguments.get("depth_distribution", None):
+    if not parsed_arguments.get("depth_distribution_path", None) and not parsed_arguments.get("depth_distribution",
+                                                                                              None):
         sys.exit("Argument depth distribution or depth distribution path is required")
 
     if parsed_arguments.get("depth_distribution_path", None) and parsed_arguments.get("depth_distribution", None):
         sys.exit("Arguments depth_distribution_path and depth_distribution couldn't be combined")
 
     depth_distribution = parsed_arguments.get("depth_distribution_path") if \
-                         parsed_arguments.get("depth_distribution_path", None) else \
-                         parsed_arguments.get("depth_distribution")
+        parsed_arguments.get("depth_distribution_path", None) else \
+        parsed_arguments.get("depth_distribution")
 
     if parsed_arguments['input'] and not validate.validate_file(parsed_arguments['input'], 'r'):
         sys.exit("Input seed file doesn't exist or is not readable")
@@ -75,8 +77,9 @@ if __name__ == "__main__":
 
     new_prefixes = generator.start_generating()
 
-    # for prefix in new_prefixes:
-    #     print(prefix)
+    if not parsed_arguments['output']:
+        for prefix in new_prefixes:
+            print(prefix)
 
     print(f"[INFO] Number of prefixes after generating {len(new_prefixes)}")
     print(f"[INFO] Number of prefixes in constructed binary trie is {generator.get_binary_trie_prefixes_num()}")
@@ -87,3 +90,11 @@ if __name__ == "__main__":
         with open(parsed_arguments['output'], 'a') as file:
             for prefix in new_prefixes:
                 file.write(prefix + '\n')
+
+    end = time.time()
+
+    print(f"[INFO] Execution time: {end - start}")
+
+
+if __name__ == "__main__":
+   generator_start()

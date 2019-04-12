@@ -1,12 +1,15 @@
 from V6Gene.Generator.v6Generator import V6Generator
 from Common.Validator.Validator import InputArgumentsValidator as validator
 
+import time
+from typing import Dict
 import argparse
 import math
 import sys
+from memory_profiler import profile
 
 
-def validate_rgr(value):
+def validate_rgr(value: str) -> float:
     """
 
     :param value:
@@ -31,7 +34,7 @@ def validate_rgr(value):
     return value
 
 
-def parse_level_distribution(value):
+def parse_level_distribution(value: str) -> Dict:
 
     parsed = value.split(',')
     result = {key: 0 for key in range(6)}
@@ -43,7 +46,7 @@ def parse_level_distribution(value):
     return result
 
 
-def parse_level_distribution_file(path):
+def parse_level_distribution_file(path: str) -> Dict:
     """
 
     :param path:
@@ -55,7 +58,7 @@ def parse_level_distribution_file(path):
         return parse_level_distribution(file_data)
 
 
-def parse_args():
+def parse_args() -> Dict[str, str]:
     """
     Prepare argparse object for working with input arguments
     :return: dictionary which has a following format -> input_argument_name: argument_value
@@ -66,7 +69,8 @@ def parse_args():
     parser.add_argument('--input', required=True, help="Defines a path to input file, which contains seed file "
                                                        "with prefixes for building binary trie")
 
-    parser.add_argument('--output', help="Defines a path to output file for printing generated prefixes")
+    parser.add_argument('--output', help="Defines a path to output file for printing generated prefixes. If isn't set"
+                                         "prefixes will be print to standard output")
 
     parser.add_argument('--prefix_quantity', required=True, type=validator.validate_prefix_quantity, help="Defines number of "
                                                                                                 "prefixes to generate."
@@ -116,16 +120,16 @@ def parse_args():
 
     return vars(parser.parse_args())
 
-
-if __name__ == "__main__":
-
+def start_generator():
+    start = time.time()
     try:
         parsed_arguments = parse_args()
 
     except Exception as exc:
         sys.exit(str(exc))
 
-    if not parsed_arguments.get("depth_distribution_path", None) and not parsed_arguments.get("depth_distribution", None):
+    if not parsed_arguments.get("depth_distribution_path", None) and not parsed_arguments.get("depth_distribution",
+                                                                                              None):
         sys.exit("Argument depth distribution or depth distribution path is required")
 
     if parsed_arguments.get("depth_distribution_path", None) and parsed_arguments.get("depth_distribution", None):
@@ -135,7 +139,8 @@ if __name__ == "__main__":
         parsed_arguments.get("depth_distribution_path", None) else \
         parsed_arguments.get("depth_distribution")
 
-    if not parsed_arguments.get("level_distribution_path", None) and not parsed_arguments.get("level_distribution", None):
+    if not parsed_arguments.get("level_distribution_path", None) and not parsed_arguments.get("level_distribution",
+                                                                                              None):
         sys.exit("Argument level_distribution or level_distribution_path is required")
 
     if parsed_arguments.get("level_distribution_path", None) and parsed_arguments.get("level_distribution", None):
@@ -167,8 +172,9 @@ if __name__ == "__main__":
 
     new_prefixes = generator.start_generating()
 
-    # for prefix in new_prefixes:
-    #     print(prefix)
+    if not parsed_arguments['output']:
+        for prefix in new_prefixes:
+            print(prefix)
 
     print(f"[INFO] Number of prefixes after generating {len(new_prefixes)}")
     print(f"[INFO] Binary trie depth after generating is {generator._binary_trie.trie_depth}")
@@ -179,4 +185,11 @@ if __name__ == "__main__":
             for prefix in new_prefixes:
                 file.write(prefix + '\n')
 
+    end = time.time()
 
+    print(end - start)
+
+
+
+if __name__ == "__main__":
+    start_generator()

@@ -90,3 +90,21 @@ class AbstractHelper:
 
         return binary_prefix[:parsed_address['length']]
 
+    @staticmethod
+    def get_bit_position(bit_value: str, prefixes: List):
+        result = {key: 0 for key in range(0, 64)}
+
+        for prefix in prefixes:
+            positions = [pos for pos, char in enumerate(prefix) if char == bit_value]
+            for position in positions:
+                result[position] += 1
+
+        convert_to_percent = {key: 0 for key in range(0, 64)}
+
+        for i  in range(len(convert_to_percent)):
+            number_of_prefixes = result[i]
+            convert_to_percent[i] = number_of_prefixes / len(prefixes) * 100
+
+
+        return convert_to_percent
+

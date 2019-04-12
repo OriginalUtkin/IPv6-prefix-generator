@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 from typing import Dict
 from V6Gene.Trie import Trie
 from V6Gene.Generator.Helper import Helper
-from V6Gene.Generator.RandomGenerator import RandomGenerator
 from Common.Converter.Converter import Converter
 from Common.Abstract.AbstractTrie import AbstractTrie
+from Common.Exceptions.Exceptions import MaximumLevelException, PrefixAlreadyExists
 
 
 @attr.s
@@ -35,8 +35,8 @@ class V6Generator:
         for prefix in self.input_prefixes:
             self._binary_trie.add_node(prefix)
 
-        # Set leaf nodes in binary trie
-        self._binary_trie.preorder(self._binary_trie.root_node, "statistic")
+        # Check leaf nodes in binary trie
+        self._binary_trie.trie_traversal("statistic")
 
         # Check if generating based on depth and level parameter is even possible
         self._check_depth_distribution()
@@ -54,6 +54,7 @@ class V6Generator:
         # Calculate number of prefixes that will be generated randomly (without using the seed prefix trie)
         if self.rgr != 0:
             self._randomly_generated_prefixes = int(float(total_generate) * self.rgr)
+
         else:
             self._randomly_generated_prefixes = 0
 
@@ -71,21 +72,20 @@ class V6Generator:
         self.Help.leafs_prefixes = self._binary_trie.prefix_leaf_nodes
 
         self.Help.create_distributing_plan()
-        self.Help.create_distributing_strategy(self._binary_trie.prefix_leaf_nodes)
 
     def start_generating(self):
-        self._binary_trie.preorder(self._binary_trie.root_node, "generate")
+
+        if self.rgr != 1:
+            self._binary_trie.trie_traversal("generate")
 
         # second phase of generating - random generating
         if self.rgr != 0:
 
             # Generate prefixes that couldn't be added to trie by generating process
-            Randomizer = RandomGenerator(self._binary_trie, distribution_plan=Helper.distribution_random_plan)
-            Randomizer.random_generate()
+            self._random_generate(self.Help.distribution_random_plan)
 
-            # Generate new prefixes from distributing plan
-            Randomizer = RandomGenerator(self._binary_trie, distribution_plan=Helper.distribution_plan)
-            Randomizer.random_generate()
+            if self.Help.distribution_plan:
+                self._random_generate(self.Help.distribution_plan, True)
 
         new_prefixes = set(AbstractTrie.get_prefix_nodes(self._binary_trie.root_node))
 
@@ -96,29 +96,35 @@ class V6Generator:
 
         # self.create_depth_distributing_graph("depth_distributing_after_generating.svg")
 
-    def create_depth_distributing_graph(self, graph_name) -> None:
-        """Create inputs and outputs graphs using current state of binary trie.
+    def _random_generate(self, distribution_plan, additional_generate: bool = False) -> None:
 
-        :param graph_name: string; name of graph
-        :return: None
-        """
-        x = []
+        IANA = '0010'
 
-        for p_len in self._binary_trie.prefix_nodes.keys():
-            x.append(p_len)
+        for org_level in distribution_plan:
+            org_level_plan = org_level['generated_info']
 
-        prefix_num = list(self._binary_trie.prefix_nodes.values())
-        plt.figure(figsize=(15, 15))
-        plt.bar(x, prefix_num, align='center', alpha=1,)
+            for prefix_len, prefix_num in org_level_plan.items():
+                for count in range(prefix_num):
 
-        plt.xlabel("Prefix length")
-        plt.ylabel("Number of prefixes")
-        plt.title("Depth distribution before generating", fontweight='bold')
+                    if self._randomly_generated_prefixes == 0 and not additional_generate:
+                        return
 
-        plt.xticks([i for i in range(max(x)+1)])
-        plt.yticks([i for i in range(100)])
+                    while True:
+                        try:
+                            # First 4 bits will be IANA part
+                            new_bits = Helper.generate_new_bits(4, prefix_len)
+                            new_prefix = IANA + new_bits
+                            self._binary_trie.add_node(new_prefix, creating_phase=False)
 
-        plt.savefig('graphs/' + graph_name, format='svg', dpi=1200)
+                            self._randomly_generated_prefixes -= 1
+
+                            break
+
+                        except PrefixAlreadyExists:
+                            continue
+
+                        except MaximumLevelException:
+                            continue
 
     def _check_depth_distribution(self) -> None:
         """Check input parameter depth distribution.
@@ -130,7 +136,6 @@ class V6Generator:
 
         initiate_distribution = self.Help.group_by_length(self._binary_trie.full_prefix_nodes)  # dictionary statistic from previous function
         final_distribution = self.Help.group_by_length(self.depth_distribution)
-        tmp_random = self._randomly_generated_prefixes
 
         for i in range(len(initiate_distribution)):
 
@@ -148,25 +153,10 @@ class V6Generator:
             if new_prefixes_num < 0:
                 raise ValueError(f"Cannot delete prefixes from {i} level")
 
-            # RIR level and RIR already exists in trie -> Random
-            if i == 0 and new_prefixes_num != 0:
-                if new_prefixes_num <= tmp_random:
-                    tmp_random -= new_prefixes_num
-                    continue
-                else:
-                    raise ValueError(f"RIR prefixes cannot be generate from trie and number of random prefixes specified by parameter rgr less than number prefixes which could be generated randomly. Please, change rgr parameter or change depth_distribution")
-            else:
-                # If exists some leafs nodes on previous depth level -> prefixes will be generated from them
-                if self.Help.group_by_length(self._binary_trie.prefix_leaf_nodes)[i-1]['prefixes_num'] > 0:
-                    continue
-
-                # No leafs. Look if we can generate this prefixes in random process
-                else:
-                    if initiate_distribution[i]['prefixes_num'] != 0 and new_prefixes_num <= tmp_random:
-                        tmp_random -= new_prefixes_num
-                        continue
-                    else:
-                        raise ValueError(f"Cannot generate prefixes on  depth level {i}")
+            # # TODO: Allow generate prefixes without random generating process
+            # If exists some leafs nodes on previous depth level -> prefixes will be generated from them
+            if self.Help.group_by_length(self._binary_trie.prefix_leaf_nodes)[i-1]['prefixes_num'] > 0:
+                continue
 
         for depth, prefixes_num in self.depth_distribution.items():
             current_value = self._binary_trie.prefix_nodes.get(depth)
@@ -183,7 +173,7 @@ class V6Generator:
 
             # input distribution contains less prefixes than already are in trie on the same depth
             if prefixes_num - current_value < 0:
-                raise ValueError("Number of prefixes on generated depth can't be less than current number")
+                raise ValueError(f"Number of prefixes on generated depth can't be less than current number in depth  {depth}. Number of prefixes in seed file is {current_value}, number of prefixes in depth distribution is {prefixes_num}")
 
         new_prefixes = sum(item['prefixes_num'] for item in final_distribution) - \
                        sum(item['prefixes_num'] for item in initiate_distribution)
@@ -194,12 +184,6 @@ class V6Generator:
     def _check_level_distribution(self):
         if self._binary_trie.trie_level > self._max_level():
             raise ValueError("Current max trie level more than max lvl from level distribution parameter")
-
-        for level, prefixes_num in self.level_distribution.items():
-            trie_prefixes = self._binary_trie.level_distribution.get(level)
-
-            if trie_prefixes > prefixes_num:
-                raise ValueError(f"Number of prefixes on generated level {level} can't be less than current number")
 
     def _max_level(self):
         max_level = 0

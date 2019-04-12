@@ -52,7 +52,7 @@ class InputArgumentsValidator:
             separated_value = value.split(':')
 
             if int(separated_value[0]) > 64:
-                raise ValueError("Value of depth cannot be greater than 64")
+                raise argparse.ArgumentError("Value of depth cannot be greater than 64")
 
             result[int(separated_value[0])] = int(separated_value[1])
 
@@ -79,10 +79,14 @@ class InputArgumentsValidator:
         :param path:
         :return:
         """
-        with open(path) as file:
-            file_data = file.read()
+        try:
+            with open(path) as file:
+                file_data = file.read()
 
-            return InputArgumentsValidator.parse_depth_distribution(file_data)
+                return InputArgumentsValidator.parse_depth_distribution(file_data)
+
+        except Exception:
+            raise
 
     @staticmethod
     def read_seed_file(seed_file):

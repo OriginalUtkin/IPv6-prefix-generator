@@ -136,6 +136,7 @@ class V6Generator:
         plt.savefig('graphs/' + graph_name, format='svg', dpi=1200)
 
     def _check_depth_distribution(self) -> None:
+        # TODO: check if prefix from org level in trie
         """Check input parameter depth distribution.
         Check input parameter and control if generating is even possible
 

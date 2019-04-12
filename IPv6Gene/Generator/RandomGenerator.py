@@ -12,6 +12,7 @@ class RandomGenerator:
 
     def random_generate(self) -> None:
         IANA = '0010'
+        generated_randomly = 0
 
         for org_level in self.distribution_plan:
             org_level_plan = org_level['generated_info']
@@ -25,7 +26,10 @@ class RandomGenerator:
                             new_prefix = IANA + new_bits
                             self.binary_trie.add_node(new_prefix, creating_phase=False)
 
+                            generated_randomly += 1
+
                             break
 
                         except (PrefixAlreadyExists, MaximumLevelException):
                             continue
+        print(f"[INFO] {generated_randomly} prefixes were generated randomly")

@@ -80,18 +80,25 @@ class Trie(AbstractTrie):
         if path:
             current_node.path = path[-1]
 
-        full_prefix_path = AbstractTrie.get_full_path(current_node, include_current=True)
+        if current_node.left_child or current_node.right_child:
+            self.check_middle_node_level(current_node)
 
-        if len(full_prefix_path) - 1 > full_prefix_path[0].level:
-            if len(full_prefix_path) - 1 > self.max_possible_level and not creating_phase:
-                AbstractTrie.delete_node_from_trie(path_from_parent_node)
-                raise MaximumLevelException
+        # new node has no child
+        else:
 
-            for prefix_index in range(len(full_prefix_path)):
-                full_prefix_path[prefix_index].level = len(full_prefix_path) - 1 - prefix_index
+            full_prefix_path = AbstractTrie.get_full_path(current_node, include_current=True)
 
-        if self._max_trie_level < len(full_prefix_path) - 1:
-            self._max_trie_level = len(full_prefix_path) - 1
+            if len(full_prefix_path) - 1 > full_prefix_path[0].level:
+                if len(full_prefix_path) - 1 > self.max_possible_level and not creating_phase:
+                    path_from_parent_node.append(current_node)
+                    AbstractTrie.delete_node_from_trie(path_from_parent_node)
+                    raise MaximumLevelException
+
+                for prefix_index in range(len(full_prefix_path)):
+                    full_prefix_path[prefix_index].level = len(full_prefix_path) - 1 - prefix_index
+
+            if self._max_trie_level < len(full_prefix_path) - 1:
+                self._max_trie_level = len(full_prefix_path) - 1
 
         current_node.prefix_flag = True
         self._prefix_nodes[current_node.depth] += 1
@@ -110,7 +117,7 @@ class Trie(AbstractTrie):
 
         return current_node
 
-    def generate_prefixes(self) -> None:
+    def generate_prefixes(self, node: Node = None) -> None:
         """Generate new prefixes using constructed binary trie.
 
         1)Going through distribution plan which was created in initialization phase and get single organisation level.
@@ -195,6 +202,3 @@ class Trie(AbstractTrie):
                     else:
                         curr_values = self.Help.distribution_plan[parent_node_level+1]["generated_info"][new_prefix_len]
                         self.Help.distribution_plan[parent_node_level + 1]["generated_info"][new_prefix_len] = curr_values - 1
-            print(len(used_nodes))
-
-
