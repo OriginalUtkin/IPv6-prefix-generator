@@ -3,6 +3,8 @@ import random
 import ipaddress
 
 from typing import List, Dict
+from ..Converter.Converter import Converter
+from ipaddress import IPv6Address
 
 
 @attr.s
@@ -101,10 +103,9 @@ class AbstractHelper:
 
         convert_to_percent = {key: 0 for key in range(0, 64)}
 
-        for i  in range(len(convert_to_percent)):
+        for i in range(len(convert_to_percent)):
             number_of_prefixes = result[i]
             convert_to_percent[i] = number_of_prefixes / len(prefixes) * 100
-
 
         return convert_to_percent
 

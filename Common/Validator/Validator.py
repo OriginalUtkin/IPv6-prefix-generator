@@ -113,6 +113,9 @@ class InputArgumentsValidator:
                     if prefix_len < 1 or prefix_len > 64:
                         continue
 
+                    if address[0] != '2':
+                        continue
+
                     verified_addresses.add(AbstractHelper.get_binary_prefix(address))
 
                 # Prune invalid prefixes

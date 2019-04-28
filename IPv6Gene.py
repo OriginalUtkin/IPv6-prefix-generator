@@ -4,6 +4,7 @@ from Common.Validator.Validator import InputArgumentsValidator as validate
 from IPv6Gene.Generator.v6Generator import V6Generator
 from memory_profiler import profile
 import time
+import statistics
 
 
 def parse_args():
@@ -34,6 +35,7 @@ def parse_args():
                                                                                               "distribution data")
 
     return vars(parser.parse_args())
+
 
 def generator_start():
 
@@ -77,6 +79,8 @@ def generator_start():
 
     new_prefixes = generator.start_generating()
 
+    statistics.create_stats(new_prefixes, 'ipv6gene', generator.get_root())
+
     if not parsed_arguments['output']:
         for prefix in new_prefixes:
             print(prefix)
@@ -97,4 +101,4 @@ def generator_start():
 
 
 if __name__ == "__main__":
-   generator_start()
+    generator_start()

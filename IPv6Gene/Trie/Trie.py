@@ -43,9 +43,6 @@ class Trie(AbstractTrie):
         else:
             current_node = parent_node
 
-        path = []
-        path_from_parent_node = list()
-
         if not creating_phase and AbstractTrie.is_exist(current_node, node_value):
             raise PrefixAlreadyExists
 
@@ -55,12 +52,7 @@ class Trie(AbstractTrie):
 
                 if not current_node.left_child:
                     current_node.left_child = Node(bit, current_node.depth + 1)
-
-                if current_node.prefix_flag:
-                    path.append(current_node)
-
-                if not creating_phase:
-                    path_from_parent_node.append(current_node)
+                    current_node.left_child.path = current_node
 
                 current_node = current_node.left_child
 
@@ -68,37 +60,18 @@ class Trie(AbstractTrie):
 
                 if not current_node.right_child:
                     current_node.right_child = Node(bit, current_node.depth + 1)
-
-                if current_node.prefix_flag:
-                    path.append(current_node)
-
-                if not creating_phase:
-                    path_from_parent_node.append(current_node)
+                    current_node.right_child.path = current_node
 
                 current_node = current_node.right_child
 
-        if path:
-            current_node.path = path[-1]
+        try:
+            self.calculate_level(current_node)
 
-        if current_node.left_child or current_node.right_child:
-            self.check_middle_node_level(current_node)
+        except MaximumLevelException:
 
-        # new node has no child
-        else:
-
-            full_prefix_path = AbstractTrie.get_full_path(current_node, include_current=True)
-
-            if len(full_prefix_path) - 1 > full_prefix_path[0].level:
-                if len(full_prefix_path) - 1 > self.max_possible_level and not creating_phase:
-                    path_from_parent_node.append(current_node)
-                    AbstractTrie.delete_node_from_trie(path_from_parent_node)
-                    raise MaximumLevelException
-
-                for prefix_index in range(len(full_prefix_path)):
-                    full_prefix_path[prefix_index].level = len(full_prefix_path) - 1 - prefix_index
-
-            if self._max_trie_level < len(full_prefix_path) - 1:
-                self._max_trie_level = len(full_prefix_path) - 1
+            if not current_node.right_child and not current_node.left_child:
+                AbstractTrie.delete_node_from_trie(current_node)
+            raise
 
         current_node.prefix_flag = True
         self._prefix_nodes[current_node.depth] += 1
@@ -173,7 +146,8 @@ class Trie(AbstractTrie):
 
                     try:
 
-                        new_bits = AbstractHelper.generate_new_bits(self.nodes[parent_node_level][node_index].depth, new_prefix_len)
+                        # new_bits = self.Help.generate_new_bits(self.nodes[parent_node_level][node_index].depth, new_prefix_len)
+                        new_bits =AbstractHelper.generate_new_bits(self.nodes[parent_node_level][node_index].depth, new_prefix_len)
                         self.add_node(new_bits, parent_node=self.nodes[parent_node_level][node_index], creating_phase=False)
                         node_added = True
 

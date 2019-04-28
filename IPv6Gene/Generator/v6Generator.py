@@ -49,9 +49,6 @@ class V6Generator:
 
         self._binary_trie.max_possible_level = self.max_level
 
-        # Create output graphs
-        # self.create_depth_distributing_graph("depth_distributing_before_generating.svg")
-
     def get_binary_trie_prefixes_num(self) -> int:
         """Get current number of prefix nodes in binary trie.
 
@@ -82,6 +79,9 @@ class V6Generator:
         self.Help.final_depth_distribution = self.depth_distribution
         self.Help.create_distributing_plan()
 
+    def get_root(self):
+        return self._binary_trie.root_node
+
     def start_generating(self) -> List[str]:
         """Start generating process.
 
@@ -91,7 +91,7 @@ class V6Generator:
         # Generate new RIR nodes and add them to binary trie
         if Helper.distribution_random_plan:
             print("[RANDOM GENERATING]: Start generating prefixes randomly")
-            Randomizer = RandomGenerator(self._binary_trie, distribution_plan=Helper.distribution_random_plan)
+            Randomizer = RandomGenerator(self._binary_trie, self.Help, distribution_plan=Helper.distribution_random_plan)
             Randomizer.random_generate()
             print("[RANDOM GENERATING]: Random generating phase successfully done")
         else:
@@ -146,6 +146,8 @@ class V6Generator:
         initiate_distribution = AbstractHelper.group_by_length(self._binary_trie.full_prefix_nodes)  # dictionary statistic from previous function
         final_distribution = AbstractHelper.group_by_length(self.depth_distribution)
 
+        for key, value in self._binary_trie.full_prefix_nodes.items():
+            print(f"{key}:{value},")
         for i in range(len(initiate_distribution)):
 
             start = initiate_distribution[i]['prefixes_num']

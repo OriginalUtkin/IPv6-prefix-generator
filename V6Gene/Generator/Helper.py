@@ -3,7 +3,6 @@ from Common.Abstract.AbstractHelper import AbstractHelper
 import attr
 
 
-# TODO: Implement AbstractHelper interface
 class Helper(AbstractHelper):
 
     leafs_prefixes = attr.ib(factory=dict, type=dict)
@@ -32,7 +31,7 @@ class Helper(AbstractHelper):
             else:
                 org_lvl = self.get_organisation_level_by_depth(prefix_depth)
 
-                if org_lvl == 0:
+                if org_lvl == 0 or org_lvl == 1:
                     self.distribution_random_plan[org_lvl]['generated_info'][prefix_depth] = new_prefix_num
 
                 else:

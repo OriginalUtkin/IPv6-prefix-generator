@@ -73,6 +73,9 @@ class V6Generator:
 
         self.Help.create_distributing_plan()
 
+    def get_root(self):
+        return self._binary_trie.root_node
+
     def start_generating(self):
 
         if self.rgr != 1:
@@ -96,8 +99,13 @@ class V6Generator:
 
         # self.create_depth_distributing_graph("depth_distributing_after_generating.svg")
 
-    def _random_generate(self, distribution_plan, additional_generate: bool = False) -> None:
+    def _random_generate(self, distribution_plan: Dict, additional_generate: bool = False) -> None:
+        """Randomly generate new prefixes.
 
+        :param distribution_plan: len of prefixes, which should be generated.
+        :param additional_generate: signalize if some number of prefixes wasn't generated after first phase.
+        :return: None
+        """
         IANA = '0010'
 
         for org_level in distribution_plan:
@@ -153,7 +161,6 @@ class V6Generator:
             if new_prefixes_num < 0:
                 raise ValueError(f"Cannot delete prefixes from {i} level")
 
-            # # TODO: Allow generate prefixes without random generating process
             # If exists some leafs nodes on previous depth level -> prefixes will be generated from them
             if self.Help.group_by_length(self._binary_trie.prefix_leaf_nodes)[i-1]['prefixes_num'] > 0:
                 continue

@@ -7,6 +7,7 @@ import argparse
 import math
 import sys
 from memory_profiler import profile
+import statistics
 
 
 def validate_rgr(value: str) -> float:
@@ -120,6 +121,7 @@ def parse_args() -> Dict[str, str]:
 
     return vars(parser.parse_args())
 
+
 def start_generator():
     start = time.time()
     try:
@@ -172,6 +174,8 @@ def start_generator():
 
     new_prefixes = generator.start_generating()
 
+    statistics.create_stats(new_prefixes, 'v6gene', generator.get_root())
+
     if not parsed_arguments['output']:
         for prefix in new_prefixes:
             print(prefix)
@@ -188,7 +192,6 @@ def start_generator():
     end = time.time()
 
     print(end - start)
-
 
 
 if __name__ == "__main__":

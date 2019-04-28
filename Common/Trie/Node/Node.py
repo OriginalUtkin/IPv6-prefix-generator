@@ -13,7 +13,6 @@ class Node:
 
     left_child = attr.ib(default=None)
     right_child = attr.ib(default=None)
-    generated = attr.ib(default=False, type=bool)
     prefix_flag = attr.ib(default=False, type=bool)
     level = attr.ib(default=0, type=int)
     path = attr.ib(default=None)

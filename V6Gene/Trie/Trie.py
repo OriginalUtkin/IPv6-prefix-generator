@@ -6,7 +6,7 @@ from Common.Exceptions.Exceptions import PrefixAlreadyExists, MaximumLevelExcept
 from Common.Abstract.AbstractTrie import AbstractTrie
 
 from typing import Dict, List, Optional
-
+from random import randint
 
 @attr.s
 class Trie(AbstractTrie):
@@ -82,9 +82,6 @@ class Trie(AbstractTrie):
         else:
             current_node = parent_node
 
-        path = []
-        path_from_parent_node = list()
-
         if not creating_phase and AbstractTrie.is_exist(current_node, node_value):
             raise PrefixAlreadyExists
 
@@ -94,12 +91,7 @@ class Trie(AbstractTrie):
 
                 if not current_node.left_child:
                     current_node.left_child = Node(bit, current_node.depth + 1)
-
-                if current_node.prefix_flag:
-                    path.append(current_node)
-
-                if not creating_phase:
-                    path_from_parent_node.append(current_node)
+                    current_node.left_child.path = current_node
 
                 current_node = current_node.left_child
 
@@ -107,33 +99,19 @@ class Trie(AbstractTrie):
 
                 if not current_node.right_child:
                     current_node.right_child = Node(bit, current_node.depth + 1)
-
-                if current_node.prefix_flag:
-                    path.append(current_node)
-
-                if not creating_phase:
-                    path_from_parent_node.append(current_node)
+                    current_node.right_child.path = current_node
 
                 current_node = current_node.right_child
 
-        if path:
-            current_node.path = path[-1]
+        try:
+            self.calculate_level(current_node)
 
-        if current_node.left_child or current_node.right_child:
-            self.check_middle_node_level(current_node)
-        else:
-            full_prefix_path = AbstractTrie.get_full_path(current_node, include_current=True)
+        except MaximumLevelException:
 
-            if len(full_prefix_path) - 1 > full_prefix_path[0].level:
-                if len(full_prefix_path) - 1 > self.max_possible_level and not creating_phase:
-                    AbstractTrie.delete_node_from_trie(path_from_parent_node)
-                    raise MaximumLevelException
+            if not current_node.right_child and not current_node.left_child:
+                AbstractTrie.delete_node_from_trie(current_node)
 
-                for prefix_index in range(len(full_prefix_path)):
-                    full_prefix_path[prefix_index].level = len(full_prefix_path) - 1 - prefix_index
-
-            if self._max_trie_level < len(full_prefix_path) - 1:
-                self._max_trie_level = len(full_prefix_path) - 1
+            raise
 
         current_node.prefix_flag = True
         self._prefix_nodes[current_node.depth] += 1
@@ -171,29 +149,6 @@ class Trie(AbstractTrie):
                     self.generate_prefixes(node)
 
 
-    def level_stats(self):
-        if not self.root_node:
-            return
-
-        node_path = list()
-        levels = {key: 0 for key in range(6)}
-        node_path.append(self.root_node)
-
-        while node_path:
-
-            node = node_path.pop()
-
-            if node.prefix_flag:
-                levels[node.level] += 1
-
-            if node.right_child:
-                node_path.append(node.right_child)
-
-            if node.left_child:
-                node_path.append(node.left_child)
-
-        return levels
-
     def generate_prefixes(self, node: Node) -> None:
         # We have current node depth. Investigate which organisation level it is.
         # After that, check next level and take some prefix from it.
@@ -210,7 +165,9 @@ class Trie(AbstractTrie):
             if self._trie_traversal_generated == self._maximum_trie_traversal_generated:
                 break
 
-            new_prefix_depth = list(self.Help.distribution_plan[prefix_depth_level + 1]['generated_info'].keys())[0]
+            all_keys = list(self.Help.distribution_plan[prefix_depth_level + 1]['generated_info'].keys())
+            new_prefix_depth = list(self.Help.distribution_plan[prefix_depth_level + 1]['generated_info'].keys())[randint(0, len(all_keys) - 1)]
+
             number_of_generated_prefixes = self.Help.get_plan_values(prefix_depth_level + 1, new_prefix_depth)
 
             try:
@@ -224,9 +181,14 @@ class Trie(AbstractTrie):
                     self.Help.decrease_plan_value(prefix_depth_level + 1, new_prefix_depth)
 
                 self._trie_traversal_generated += 1
+                # print(f"New prefix depth {new_prefix_depth} from node {node.depth}")
 
             except PrefixAlreadyExists:
+                # print("________________________________")
+                self._trie_traversal_generated += 1
                 break
 
             except MaximumLevelException:
+                # print("________________________________")
+                self._trie_traversal_generated += 1
                 break
