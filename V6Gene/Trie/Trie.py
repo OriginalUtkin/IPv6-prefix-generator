@@ -8,6 +8,7 @@ from Common.Abstract.AbstractTrie import AbstractTrie
 from typing import Dict, List, Optional
 from random import randint
 
+
 @attr.s
 class Trie(AbstractTrie):
     _level_distribution = attr.ib(factory=dict, type=dict)
@@ -152,8 +153,7 @@ class Trie(AbstractTrie):
     def generate_prefixes(self, node: Node) -> None:
         # We have current node depth. Investigate which organisation level it is.
         # After that, check next level and take some prefix from it.
-        if not node.allow_generate:
-            print("ERROR")
+
         prefix_depth_level = self.Help.get_organisation_level_by_depth(node.depth)
 
         # selected prefix has a length 64. This prefix cannot generate any other
@@ -184,11 +184,9 @@ class Trie(AbstractTrie):
                 # print(f"New prefix depth {new_prefix_depth} from node {node.depth}")
 
             except PrefixAlreadyExists:
-                # print("________________________________")
                 self._trie_traversal_generated += 1
                 break
 
             except MaximumLevelException:
-                # print("________________________________")
                 self._trie_traversal_generated += 1
                 break

@@ -37,7 +37,6 @@ class V6Generator:
 
         # Check leaf nodes in binary trie
         self._binary_trie.trie_traversal("statistic")
-
         # Check if generating based on depth and level parameter is even possible
         self._check_depth_distribution()
         self._check_level_distribution()
@@ -63,15 +62,14 @@ class V6Generator:
 
         self._binary_trie._maximum_trie_traversal_generated = self._generated_traversing_trie
 
-        # Create output graphs
-        # self.create_depth_distributing_graph("depth_distributing_before_generating.svg")
-
     def help_init(self):
         self.Help.start_depth_distribution = self._binary_trie.full_prefix_nodes
         self.Help.final_depth_distribution = self.depth_distribution
         self.Help.leafs_prefixes = self._binary_trie.prefix_leaf_nodes
 
         self.Help.create_distributing_plan()
+        self.Help.create_distributing_strategy(self._binary_trie.prefix_leaf_nodes)
+
 
     def get_root(self):
         return self._binary_trie.root_node
@@ -106,7 +104,7 @@ class V6Generator:
         :param additional_generate: signalize if some number of prefixes wasn't generated after first phase.
         :return: None
         """
-        IANA = '0010'
+        IANA = '001'
 
         for org_level in distribution_plan:
             org_level_plan = org_level['generated_info']
@@ -120,7 +118,7 @@ class V6Generator:
                     while True:
                         try:
                             # First 4 bits will be IANA part
-                            new_bits = Helper.generate_new_bits(4, prefix_len)
+                            new_bits = Helper.generate_new_bits(3, prefix_len)
                             new_prefix = IANA + new_bits
                             self._binary_trie.add_node(new_prefix, creating_phase=False)
 

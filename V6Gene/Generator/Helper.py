@@ -16,6 +16,13 @@ class Helper(AbstractHelper):
         {'interval': [64, 65], 'generated_info': {}}
     ]
 
+    generating_strategy = [
+        {'interval': [12, 32], 'generating_strategy': None},
+        {'interval': [32, 48], 'generating_strategy': None},
+        {'interval': [48, 64], 'generating_strategy': None},
+        {'interval': [64, 65], 'generating_strategy': None}
+    ]
+
     def create_distributing_plan(self) -> None:
         """Initialize distribution plan variable.
         :return: None
@@ -76,3 +83,54 @@ class Helper(AbstractHelper):
 
     def decrease_plan_value(self, prefix_depth_level, prefix_depth):
         self.distribution_plan[prefix_depth_level]['generated_info'][prefix_depth] -= 1
+
+    def create_distributing_strategy(self, prefix_leaf_nodes: Dict) -> None:
+        """Initialize distributing strategy for all organisation levels.
+
+        :param prefix_leaf_nodes: Dictionary; dictionary in format {org_level: number of leaf nodes}
+        :return: None
+        """
+
+        leaf_prefixes = self.group_by_length(prefix_leaf_nodes)
+
+        for i in range(len(self.distribution_plan)):
+            print(i)
+            # cannot generate from leaf nodes with len eq 64
+            if i == len(self.distribution_plan) - 1:
+                break
+
+            # nothing to do
+            if not self.distribution_plan[i + 1]['generated_info']:
+                continue
+
+            new_prefixes = sum(self.distribution_plan[i + 1]['generated_info'].values())
+            leafs_nodes = leaf_prefixes[i]['prefixes_num']
+
+            # calculate how many prefixes will be generated from nodes on this level
+            number_of_prefixes_from_leaf = float(new_prefixes / leafs_nodes)
+
+            # number of leaf prefixes the same as number of prefixes on following organisation level
+            if number_of_prefixes_from_leaf == 1:
+                self.generating_strategy[i]['generating_strategy'] = [1 for _ in range(int(number_of_prefixes_from_leaf))]
+
+                continue
+
+            # Just one leaf prefix on previous organisation level
+            if number_of_prefixes_from_leaf == new_prefixes:
+                self.generating_strategy[i]['generating_strategy'] = [new_prefixes]
+
+                continue
+
+            if number_of_prefixes_from_leaf > 1:
+                tmp = [int(number_of_prefixes_from_leaf) for _ in range(int(leafs_nodes) - 1)]
+                tmp.append(new_prefixes - sum(tmp))
+                self.generating_strategy[i]['generating_strategy'] = tmp
+
+                continue
+
+            if number_of_prefixes_from_leaf < 1:
+                self.generating_strategy[i]['generating_strategy'] = [1 for _ in range(new_prefixes)]
+
+                continue
+
+        print()
