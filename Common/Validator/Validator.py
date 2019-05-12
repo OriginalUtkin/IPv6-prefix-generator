@@ -4,6 +4,7 @@ import ipaddress
 from Common.Abstract.AbstractHelper import AbstractHelper
 from typing import List
 
+
 class InputArgumentsValidator:
 
     @staticmethod
@@ -22,9 +23,11 @@ class InputArgumentsValidator:
             return False
 
     @staticmethod
-    def validate_prefix_quantity(value):
+    def validate_prefix_quantity(value) -> int:
         """
-        :param value
+        Validate quantity of prefixes is set by prefix_quantity input argument
+        :raises ArgumentTypeError in case if value of argument is not correct
+        :param value converted from string to integer number of prefixes for generating
         """
 
         try:
@@ -122,5 +125,4 @@ class InputArgumentsValidator:
                     continue
 
             # Prune redundant prefixes
-
             return sorted(verified_addresses, key=len)

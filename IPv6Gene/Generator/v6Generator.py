@@ -1,5 +1,4 @@
 import attr
-import matplotlib.pyplot as plt
 
 from Common.Abstract.AbstractHelper import AbstractHelper
 from Common.Abstract.AbstractTrie import AbstractTrie
@@ -121,32 +120,6 @@ class V6Generator:
         converted_prefixes = output_converter.convert_prefixes()
 
         return converted_prefixes
-
-        # self.create_depth_distributing_graph("depth_distributing_after_generating.svg")
-
-    def create_depth_distributing_graph(self, graph_name) -> None:
-        """Create inputs and outputs graphs using current state of binary trie.
-
-        :param graph_name: string; name of graph
-        :return: None
-        """
-        x = []
-
-        for p_len in self._binary_trie.prefix_nodes.keys():
-            x.append(p_len)
-
-        prefix_num = list(self._binary_trie.prefix_nodes.values())
-        plt.figure(figsize=(15, 15))
-        plt.bar(x, prefix_num, align='center', alpha=1,)
-
-        plt.xlabel("Prefix length")
-        plt.ylabel("Number of prefixes")
-        plt.title("Depth distribution before generating", fontweight='bold')
-
-        plt.xticks([i for i in range(max(x)+1)])
-        plt.yticks([i for i in range(100)])
-
-        plt.savefig('graphs/' + graph_name, format='svg', dpi=1200)
 
     def _check_depth_distribution(self) -> None:
         """Check input parameter depth distribution.

@@ -1,6 +1,7 @@
+import attr
+
 from typing import Dict, List
 from Common.Abstract.AbstractHelper import AbstractHelper
-import attr
 
 
 class Helper(AbstractHelper):
