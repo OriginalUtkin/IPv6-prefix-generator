@@ -62,11 +62,12 @@ class InputArgumentsValidator:
         return result
 
     @staticmethod
-    def parse_level_distribution(value):
+    def parse_level_distribution(value) -> int:
         """
-
-        :param value:
-        :return:
+        Get the string which represents level distribution and find the maximum value of level
+        :param value: string representation of level distribution
+        :raises ValueError in case if level value couldn't be use
+        :return: integer value, maximum level of prefix in trie structure
         """
         max_level = int(value)
 
@@ -78,9 +79,9 @@ class InputArgumentsValidator:
     @staticmethod
     def parse_depth_distribution_file(path):
         """
-
-        :param path:
-        :return:
+        Parse input file with depth distribution
+        :param path: path to the file with distribution
+        :return: dictionary with depth distribution prefixes
         """
         try:
             with open(path) as file:
