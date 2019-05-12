@@ -37,14 +37,18 @@ def validate_rgr(value: str) -> float:
 
 def parse_level_distribution(value: str) -> Dict:
 
-    parsed = value.split(',')
-    result = {key: 0 for key in range(6)}
+    try:
+        parsed = value.split(',')
+        result = {key: 0 for key in range(6)}
 
-    for value in parsed:
-        separated_value = value.split(':')
-        result[int(separated_value[0])] = int(separated_value[1])
+        for value in parsed:
+            separated_value = value.split(':')
+            result[int(separated_value[0])] = int(separated_value[1])
 
-    return result
+        return result
+
+    except Exception:
+        raise argparse.ArgumentTypeError("Cannot parse level_distribution. Check if value of argument is correct or use level_distribution_parse")
 
 
 def parse_level_distribution_file(path: str) -> Dict:

@@ -81,7 +81,8 @@ def generator_start() -> None:
         prefix_quantity=parsed_arguments['prefix_quantity'],
         depth_distribution=depth_distribution,
         max_level=parsed_arguments['max_level'],
-        input_prefixes=input_prefixes
+        input_prefixes=input_prefixes,
+        stats=parsed_arguments['stats']
     )
 
     if parsed_arguments['stats']:
