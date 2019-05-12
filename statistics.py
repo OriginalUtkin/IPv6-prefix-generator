@@ -41,7 +41,25 @@ def bit_distribution(bit_value, prefix_set, set_name) -> None:
 
     plt.savefig(f"statistics/{set_name}/bit_distribution.png", format='png', dpi=850)
 
-    plt.show()
+
+def level_distribution(distribution, set_name) -> None:
+    """
+    Create graphs according to level distribution for particular dataset.
+    :param distribution: level distribution in trie structure for particular nodes
+    :param set_name: folder name which will be used for storing output graph
+    :return: None
+    """
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    xs = list(distribution.keys())
+    ys = list(distribution.values())
+    ax.bar(xs, ys, color='blue')
+
+    plt.grid(linewidth=0.3)
+
+    ax.set_yscale('log')
+
+    plt.savefig(f"statistics/{set_name}/level_distribution.png", format='png', dpi=850)
 
 
 def depth_distribution_graph(distribution: Dict, set_name: str) -> None:
@@ -52,18 +70,23 @@ def depth_distribution_graph(distribution: Dict, set_name: str) -> None:
     :return: None
     """
     fig = plt.figure()
-    ax1 = fig.add_subplot(1,1,1)
+    ax1 = fig.add_subplot(1, 1, 1)
 
     xs = []
     ys = []
 
-    convert_to_percent = {key: 0 for key in range(0, 64)}
+    convert_to_percent = {key: 0 for key in range(0, 65)}
     all_prefixes = sum(distribution.values())
+
     for i in range(len(convert_to_percent)):
         number_of_prefixes = distribution[i]
         convert_to_percent[i] = number_of_prefixes / all_prefixes * 100
 
+    # small_range = {}
+
     for key, value in convert_to_percent.items():
+        # if value < 0.2 and value > 0:
+        #     small_range[key] = value
         xs.append(key)
         ys.append(value)
 
@@ -75,11 +98,33 @@ def depth_distribution_graph(distribution: Dict, set_name: str) -> None:
 
     plt.xlabel("Délka prefixu")
     plt.ylabel("Počet prefixů [%]")
-
+    # small_percent_value_part(small_range, set_name)
     plt.savefig(f"statistics/{set_name}/depth_distribution.png", format='png', dpi=850)
 
-    plt.show()
 
+def small_percent_value_part(dist, set_name) -> None:
+    fig = plt.figure()
+    ax1 = fig.add_subplot(1, 1, 1)
+    xs = []
+    ys = []
+
+    for key, val in dist.items():
+        xs.append(key)
+        ys.append(val)
+
+    ax1.clear()
+    ax1.bar(xs, ys, color='b')
+
+    plt.xticks(np.arange(0, 65, 4))
+    plt.ylim(0.000, 0.2)
+
+    plt.grid(linewidth=0.3)
+
+    plt.xlabel("Délka prefixu")
+    plt.ylabel("Počet prefixů [%]")
+    plt.savefig(f"statistics/{set_name}/unseen_prefixes.png", format='png', dpi=850)
+
+    plt.show()
 
 def get_prefix_nodes_info(root_node) -> None:
     """
@@ -156,7 +201,8 @@ def create_stats(output_prefixes: List[str], name: str, root_node) -> None:
 
 def compare_memory() -> None:
     """
-    Create graphs for comparing memory usage of generators.
+    Create graphs for comparing used memory by generators.
+    Data used for creating graphs were got by memory_profiler library.
     :return: None
     """
     number_of_prefixes = [68750, 150000, 250000, 450000]
@@ -178,7 +224,7 @@ def compare_memory() -> None:
 
     plt.ylabel('Spotřebovaná paměť [Gb]')
     plt.legend()
-    plt.savefig(f"statistics/memory.png", format='png', dpi=850)
+    plt.savefig(f"statistics/memory_usage.png", format='png', dpi=850)
 
 
 def time_complexity() -> None:
@@ -209,10 +255,10 @@ def time_complexity() -> None:
 
 
 if __name__ == '__main__':
-    prefix_sets = ['dataset2007','dataset2019']
+    prefix_sets = ['dataset2007', 'dataset2019']
 
     for current_set in prefix_sets:
-        path = f"dataset/{current_set}"
+        path = f"formated_datasets/{current_set}"
 
         prefixes = InputArgumentsValidator.read_seed_file(path)
 
@@ -226,5 +272,5 @@ if __name__ == '__main__':
         depth_distribution_graph(depth_distribution_stats, current_set)
 
         level_distribution_stats = AbstractTrie.level_stats(binary_trie.root_node)
-        print(level_distribution_stats)
+        level_distribution(level_distribution_stats, current_set)
 
