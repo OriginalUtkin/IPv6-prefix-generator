@@ -1,5 +1,4 @@
 import attr
-import matplotlib.pyplot as plt
 
 from typing import Dict
 from V6Gene.Trie import Trie
@@ -62,7 +61,11 @@ class V6Generator:
 
         self._binary_trie._maximum_trie_traversal_generated = self._generated_traversing_trie
 
-    def help_init(self):
+    def help_init(self) -> None:
+        """
+        Initialize all helper structures which will be used during the generating process
+        :return: None
+        """
         self.Help.start_depth_distribution = self._binary_trie.full_prefix_nodes
         self.Help.final_depth_distribution = self.depth_distribution
         self.Help.leafs_prefixes = self._binary_trie.prefix_leaf_nodes
@@ -70,8 +73,11 @@ class V6Generator:
         self.Help.create_distributing_plan()
         self.Help.create_distributing_strategy(self._binary_trie.prefix_leaf_nodes)
 
-
     def get_root(self):
+        """
+        Return the root node of constructed binary trie
+        :return: Node object that represents root node of tire
+        """
         return self._binary_trie.root_node
 
     def start_generating(self):
@@ -94,8 +100,6 @@ class V6Generator:
         converted_prefixes = output_converter.convert_prefixes()
 
         return converted_prefixes
-
-        # self.create_depth_distributing_graph("depth_distributing_after_generating.svg")
 
     def _random_generate(self, distribution_plan: Dict, additional_generate: bool = False) -> None:
         """Randomly generate new prefixes.
@@ -186,11 +190,11 @@ class V6Generator:
         if new_prefixes > self.prefix_quantity:
             raise ValueError("Generated prefixes num is greater than expected")
 
-    def _check_level_distribution(self):
+    def _check_level_distribution(self) -> None:
         if self._binary_trie.trie_level > self._max_level():
             raise ValueError("Current max trie level more than max lvl from level distribution parameter")
 
-    def _max_level(self):
+    def _max_level(self) -> int:
         max_level = 0
 
         for key in self.level_distribution.keys():

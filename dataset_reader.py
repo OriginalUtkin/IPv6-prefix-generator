@@ -17,7 +17,7 @@ def process_datasets(input_datasets_path: List[str]):
                 file_entry = line.split('\t')
                 prefixes.add(file_entry[0] + "/" + file_entry[1])
 
-        with open(f"dataset/{dataset.split('/')[1]}", 'w+') as output_dataset:
+        with open(f"formated_datasets/{dataset.split('/')[1]}", 'w+') as output_dataset:
             for prefix in prefixes:
                 output_dataset.write(prefix + '\n')
 

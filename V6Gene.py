@@ -1,20 +1,20 @@
 from V6Gene.Generator.v6Generator import V6Generator
 from Common.Validator.Validator import InputArgumentsValidator as validator
-
-import time
 from typing import Dict
+
 import argparse
+import time
 import math
 import sys
-from memory_profiler import profile
 import statistics
 
 
 def validate_rgr(value: str) -> float:
     """
-
-    :param value:
-    :return:
+    Validate input value of rgr param
+    :param value: input value of rgr parameter
+    :raises ArgumentTypeError in case, when value incorrect
+    :return: converted value which could be used in generator
     """
 
     try:
@@ -100,7 +100,7 @@ def parse_args() -> Dict[str, str]:
                                                                                               "depth distribution "
                                                                                               "data. Sample file could "
                                                                                               "be found in the "
-                                                                                              "input_params/V6Gene "
+                                                                                              "distributions/V6Gene "
                                                                                               "folder. This argument "
                                                                                               "can't be combined with "
                                                                                               "depth_distribution "
@@ -112,17 +112,26 @@ def parse_args() -> Dict[str, str]:
                                                                                          "contains level distribution "
                                                                                          "data. Sample file could be "
                                                                                          "found in the "
-                                                                                         "input_params/V6Gene folder. "
+                                                                                         "distributions/V6Gene folder. "
                                                                                          "This argument can't be "
                                                                                          "combined with level_"
                                                                                          "distribution argument. If not"
                                                                                          " given, level_distribution is"
                                                                                          " required")
 
+    parser.add_argument('--graph', action='store_true', required=False, help="Allow to create output depth distribution graph. Graph will "
+                                                                             "be saved to stats_output folder. After creating graph, "
+                                                                             "additional information as level distribution will be printed"
+                                                                             "to output."
+    )
+
+    parser.add_argument('--stats', action='store_true', required=False, help="Print information during the generating "
+                                                                             "process")
+
     return vars(parser.parse_args())
 
 
-def start_generator():
+def start_generator() -> None:
     start = time.time()
     try:
         parsed_arguments = parse_args()
@@ -168,21 +177,24 @@ def start_generator():
         input_prefixes=input_prefixes
     )
 
-    print(f"[INFO] Number of prefixes in seed input file is {len(set(input_prefixes))}")
-    print(f"[INFO] Constructed binary trie depth is {generator._binary_trie.trie_depth}")
-    print(f"[INFO] Constructed binary trie level is {generator._binary_trie.trie_level}")
+    if parsed_arguments['stats']:
+        print(f"[INFO] Number of prefixes in seed input file is {len(set(input_prefixes))}")
+        print(f"[INFO] Constructed binary trie depth is {generator._binary_trie.trie_depth}")
+        print(f"[INFO] Constructed binary trie level is {generator._binary_trie.trie_level}")
 
     new_prefixes = generator.start_generating()
 
-    statistics.create_stats(new_prefixes, 'v6gene', generator.get_root())
+    if parsed_arguments['graph']:
+        statistics.create_stats(new_prefixes, 'v6gene', generator.get_root())
 
     if not parsed_arguments['output']:
         for prefix in new_prefixes:
             print(prefix)
 
-    print(f"[INFO] Number of prefixes after generating {len(new_prefixes)}")
-    print(f"[INFO] Binary trie depth after generating is {generator._binary_trie.trie_depth}")
-    print(f"[INFO] Binary trie level after generating is {generator._binary_trie.trie_level}")
+    if parsed_arguments['stats']:
+        print(f"[INFO] Number of prefixes after generating {len(new_prefixes)}")
+        print(f"[INFO] Binary trie depth after generating is {generator._binary_trie.trie_depth}")
+        print(f"[INFO] Binary trie level after generating is {generator._binary_trie.trie_level}")
 
     if parsed_arguments['output']:
         with open(parsed_arguments['output'], 'a') as file:
@@ -191,7 +203,8 @@ def start_generator():
 
     end = time.time()
 
-    print(end - start)
+    if parsed_arguments['stats']:
+        print(end - start)
 
 
 if __name__ == "__main__":

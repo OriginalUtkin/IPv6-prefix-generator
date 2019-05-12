@@ -47,7 +47,7 @@ class Trie(AbstractTrie):
         return self._prefix_leaf_nodes
 
     @property
-    def init_max_level(self):
+    def init_max_level(self) -> int:
 
         max_level = 0
 
@@ -125,7 +125,12 @@ class Trie(AbstractTrie):
 
         return current_node
 
-    def trie_traversal(self, action):
+    def trie_traversal(self, action: str) -> None:
+        """Traversal binary trie and run particular action if leaf node is found
+
+        :param action: name of action which should be start
+        :return: None
+        """
 
         if not self.root_node:
             return
@@ -149,10 +154,13 @@ class Trie(AbstractTrie):
                 else:
                     self.generate_prefixes(node)
 
-
     def generate_prefixes(self, node: Node) -> None:
-        # We have current node depth. Investigate which organisation level it is.
-        # After that, check next level and take some prefix from it.
+        """Generate new prefixes from selected node :param node
+        We have current node depth. Investigate which organisation level it is.
+        After that, check next level and take some prefix from it.
+        :param node: selected node which will be used for generating new prefix nodes
+        :return: None
+        """
 
         prefix_depth_level = self.Help.get_organisation_level_by_depth(node.depth)
 
@@ -160,7 +168,9 @@ class Trie(AbstractTrie):
         if prefix_depth_level == 4:
             return
 
-        while self.Help.distribution_plan[prefix_depth_level + 1]['generated_info']:
+        used_strategy = self.Help.generating_strategy[prefix_depth_level]['generating_strategy'][0]
+
+        while used_strategy > 0:
 
             if self._trie_traversal_generated == self._maximum_trie_traversal_generated:
                 break
@@ -180,13 +190,10 @@ class Trie(AbstractTrie):
                 else:
                     self.Help.decrease_plan_value(prefix_depth_level + 1, new_prefix_depth)
 
+                used_strategy -= 1
                 self._trie_traversal_generated += 1
-                # print(f"New prefix depth {new_prefix_depth} from node {node.depth}")
 
-            except PrefixAlreadyExists:
+            except (PrefixAlreadyExists, MaximumLevelException):
                 self._trie_traversal_generated += 1
-                break
-
-            except MaximumLevelException:
-                self._trie_traversal_generated += 1
-                break
+                used_strategy -= 1
+                continue

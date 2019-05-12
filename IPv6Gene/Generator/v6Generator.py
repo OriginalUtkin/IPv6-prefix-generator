@@ -18,6 +18,7 @@ class V6Generator:
     max_level = attr.ib(default=7, type=int)
     input_prefixes = attr.ib(factory=list, type=list)
     Help = attr.ib(default=Helper(), type=Helper)
+    stats = attr.ib(default=False, type=bool)
 
     # Parameters for generating
     _binary_trie = attr.ib(default=Trie.Trie(), type=Trie)
@@ -33,12 +34,14 @@ class V6Generator:
         self._binary_trie.Help = self.Help
 
         #  Construct the seed prefix trie
-        print("[GENERATOR]: Construct binary trie")
+        if self.stats:
+            print("[GENERATOR]: Construct binary trie")
 
         for prefix in self.input_prefixes:
             self._binary_trie.add_node(prefix)
 
-        print("[GENERATOR]: Binary trie was successfully constructed")
+        if self.stats:
+            print("[GENERATOR]: Binary trie was successfully constructed")
 
         # Check if generating based on depth and level parameter is even possible
         self._check_depth_distribution()
@@ -47,6 +50,7 @@ class V6Generator:
         # Initialize helper class
         self.help_init()
 
+        self._binary_trie.stats = self.stats
         self._binary_trie.max_possible_level = self.max_level
 
     def get_binary_trie_prefixes_num(self) -> int:
@@ -90,17 +94,26 @@ class V6Generator:
 
         # Generate new RIR nodes and add them to binary trie
         if Helper.distribution_random_plan:
-            print("[RANDOM GENERATING]: Start generating prefixes randomly")
-            Randomizer = RandomGenerator(self._binary_trie, self.Help, distribution_plan=Helper.distribution_random_plan)
-            Randomizer.random_generate()
-            print("[RANDOM GENERATING]: Random generating phase successfully done")
-        else:
-            print("[RANDOM GENERATING]: Random generating phase is skipped. Only RIR prefixes that have "
-                  "a length in interval 12  - 31 could be generated randomly")
+            if self.stats:
+                print("[RANDOM GENERATING]: Start generating prefixes randomly")
 
-        print("[TRIE TRAVERSING GENERATING]: Start generating prefixes using constructed trie")
+            Randomizer = RandomGenerator(self._binary_trie, self.Help, distribution_plan=Helper.distribution_random_plan, stats=self.stats)
+            Randomizer.random_generate()
+
+            if self.stats:
+                print("[RANDOM GENERATING]: Random generating phase successfully done")
+        else:
+            if self.stats:
+                print("[RANDOM GENERATING]: Random generating phase is skipped. Only RIR prefixes that have "
+                      "a length in interval 12  - 31 could be generated randomly")
+
+        if self.stats:
+            print("[TRIE TRAVERSING GENERATING]: Start generating prefixes using constructed trie")
+
         self._binary_trie.generate_prefixes()
-        print("[TRIE TRAVERSING GENERATING]: Traversing trie generating phase successfully done")
+
+        if self.stats:
+            print("[TRIE TRAVERSING GENERATING]: Traversing trie generating phase successfully done")
 
         new_prefixes = set(AbstractTrie.get_prefix_nodes(self._binary_trie.root_node))
 
@@ -136,7 +149,6 @@ class V6Generator:
         plt.savefig('graphs/' + graph_name, format='svg', dpi=1200)
 
     def _check_depth_distribution(self) -> None:
-        # TODO: check if prefix from org level in trie
         """Check input parameter depth distribution.
         Check input parameter and control if generating is even possible
 
@@ -146,8 +158,6 @@ class V6Generator:
         initiate_distribution = AbstractHelper.group_by_length(self._binary_trie.full_prefix_nodes)  # dictionary statistic from previous function
         final_distribution = AbstractHelper.group_by_length(self.depth_distribution)
 
-        for key, value in self._binary_trie.full_prefix_nodes.items():
-            print(f"{key}:{value},")
         for i in range(len(initiate_distribution)):
 
             start = initiate_distribution[i]['prefixes_num']

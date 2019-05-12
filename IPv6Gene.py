@@ -1,10 +1,10 @@
 import argparse
+import statistics
 import sys
+import time
+
 from Common.Validator.Validator import InputArgumentsValidator as validate
 from IPv6Gene.Generator.v6Generator import V6Generator
-from memory_profiler import profile
-import time
-import statistics
 
 
 def parse_args():
@@ -16,28 +16,40 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Arguments parser for IPv6 prefix generator")
 
     parser.add_argument('--input', required=True, help="Defines a path to input file, which contains seed prefixes for "
-                                                       "building binary trie")
+                                                       "building binary trie"
+    )
 
     parser.add_argument('--output', help="Defines a path to output file for printing generated prefixes")
 
     parser.add_argument('--prefix_quantity', required=True, type=validate.validate_prefix_quantity, help="Defines number of "
                                                                                                 "prefixes to generate. "
                                                                                                 "Defined by integer "
-                                                                                                "positive value")
+                                                                                                "positive value"
+    )
 
     parser.add_argument('--depth_distribution', type=validate.parse_depth_distribution, help="Defines a distribution by depth")
 
     parser.add_argument('--max_level', required=True, type=validate.parse_level_distribution, help="Defines maximum possible by "
-                                                                                          "level")
+                                                                                          "level"
+    )
 
     parser.add_argument('--depth_distribution_path', type=validate.parse_depth_distribution_file, help="Path to the file which "
                                                                                               "contains depth "
-                                                                                              "distribution data")
+                                                                                              "distribution data"
+    )
+
+    parser.add_argument('--graph', action='store_true', required=False, help="Allow to create output depth distribution graph. Graph will "
+                                                        "be saved to stats_output folder. After creating graph, "
+                                                        "additional information as level distribution will be printed"
+                                                        "to output."
+    )
+
+    parser.add_argument('--stats', action='store_true', required=False, help="Print information during the generating process")
 
     return vars(parser.parse_args())
 
 
-def generator_start():
+def generator_start() -> None:
 
     start = time.time()
     try:
@@ -72,23 +84,26 @@ def generator_start():
         input_prefixes=input_prefixes
     )
 
-    print(f"[INFO] Number of prefixes in seed input file is {len(set(input_prefixes))}")
-    print(f"[INFO] Number of prefixes in constructed binary trie is {generator.get_binary_trie_prefixes_num()}")
-    print(f"[INFO] Constructed binary trie depth is {generator.get_binary_trie_depth()}")
-    print(f"[INFO] Constructed binary trie level is {generator.get_binary_trie_level()}")
+    if parsed_arguments['stats']:
+        print(f"[INFO] Number of prefixes in seed input file is {len(set(input_prefixes))}")
+        print(f"[INFO] Number of prefixes in constructed binary trie is {generator.get_binary_trie_prefixes_num()}")
+        print(f"[INFO] Constructed binary trie depth is {generator.get_binary_trie_depth()}")
+        print(f"[INFO] Constructed binary trie level is {generator.get_binary_trie_level()}")
 
     new_prefixes = generator.start_generating()
 
-    statistics.create_stats(new_prefixes, 'ipv6gene', generator.get_root())
+    if parsed_arguments['graph']:
+        statistics.create_stats(new_prefixes, 'ipv6gene', generator.get_root())
 
     if not parsed_arguments['output']:
         for prefix in new_prefixes:
             print(prefix)
 
-    print(f"[INFO] Number of prefixes after generating {len(new_prefixes)}")
-    print(f"[INFO] Number of prefixes in constructed binary trie is {generator.get_binary_trie_prefixes_num()}")
-    print(f"[INFO] Binary trie depth after generating is {generator.get_binary_trie_depth()}")
-    print(f"[INFO] Binary trie level after generating is {generator.get_binary_trie_level()}")
+    if parsed_arguments['stats']:
+        print(f"[INFO] Number of prefixes after generating {len(new_prefixes)}")
+        print(f"[INFO] Number of prefixes in constructed binary trie is {generator.get_binary_trie_prefixes_num()}")
+        print(f"[INFO] Binary trie depth after generating is {generator.get_binary_trie_depth()}")
+        print(f"[INFO] Binary trie level after generating is {generator.get_binary_trie_level()}")
 
     if parsed_arguments['output']:
         with open(parsed_arguments['output'], 'a') as file:
@@ -97,7 +112,8 @@ def generator_start():
 
     end = time.time()
 
-    print(f"[INFO] Execution time: {end - start}")
+    if parsed_arguments['stats']:
+        print(f"[INFO] Execution time: {end - start}")
 
 
 if __name__ == "__main__":

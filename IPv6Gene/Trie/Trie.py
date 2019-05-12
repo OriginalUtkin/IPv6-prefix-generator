@@ -16,6 +16,7 @@ class Trie(AbstractTrie):
     Class that represents binary trie for improved version of generator
     """
     Help = attr.ib(default=None, type=Helper)
+    stats = attr.ib(default=False, type=bool)
     nodes = {
         1: [], 2: [], 3: [], 4: [],
     }
@@ -124,9 +125,10 @@ class Trie(AbstractTrie):
             if len(plan_entry["generated_info"]) == 0:
                 continue
 
-            print(
-                f"[GENERATING PROCESS]: Currently prefixes is being generated on interval:{plan_entry.get('interval')}"
-            )
+            if self.stats:
+                print(
+                    f"[GENERATING PROCESS]: Currently prefixes is being generated on interval:{plan_entry.get('interval')}"
+                )
 
             while plan_entry["generated_info"]:
                 new_prefix_len = list(plan_entry["generated_info"].keys())[0]
@@ -146,8 +148,7 @@ class Trie(AbstractTrie):
 
                     try:
 
-                        # new_bits = self.Help.generate_new_bits(self.nodes[parent_node_level][node_index].depth, new_prefix_len)
-                        new_bits =AbstractHelper.generate_new_bits(self.nodes[parent_node_level][node_index].depth, new_prefix_len)
+                        new_bits = AbstractHelper.generate_new_bits(self.nodes[parent_node_level][node_index].depth, new_prefix_len)
                         self.add_node(new_bits, parent_node=self.nodes[parent_node_level][node_index], creating_phase=False)
                         node_added = True
 
