@@ -195,8 +195,8 @@ def create_stats(output_prefixes: List[str], name: str, root_node) -> None:
 
     depth_distribution_graph(depth_distribution, name)
 
-    level_distribution = AbstractTrie.level_stats(root_node)
-    print(f"Level distribution in generated set: {level_distribution}")
+    level_distribution_stats = AbstractTrie.level_stats(root_node)
+    level_distribution(level_distribution_stats, current_set)
 
 
 def compare_memory() -> None:
