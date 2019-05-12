@@ -2,17 +2,17 @@ import argparse
 import ipaddress
 
 from Common.Abstract.AbstractHelper import AbstractHelper
-
+from typing import List
 
 class InputArgumentsValidator:
 
     @staticmethod
-    def validate_file(path, modifier):
+    def validate_file(path, modifier) -> bool:
         """
         Check if file exists and it is readable (for input file) and writable (for output)
-        :param path:
-        :param modifier:
-        :return:
+        :param path: path to the dataset or prefix set file
+        :param modifier: additional flag which used for check if file is readable or writable
+        :return: true in case that file could be used (according to modifier). False otherwise
         """
         try:
             with open(path, modifier):
@@ -89,11 +89,13 @@ class InputArgumentsValidator:
             raise
 
     @staticmethod
-    def read_seed_file(seed_file):
+    def read_seed_file(seed_file) -> List[str]:
         """
-
-        :param seed_file:
-        :return:
+        Read input prefix seed file. During the reading check if prefix is valid (has a prefix len greater than 12
+        (via allocation policy) and less than 64 (via allocation policy)). After that convert prefix to binary form (use
+        string for end representation of binary form) and save converted prefix to set.
+        :param seed_file: sed file with prefixes
+        :return: filtered list with all prefixes in string format sorted by length
         """
         verified_addresses = set()
 
@@ -110,10 +112,7 @@ class InputArgumentsValidator:
                     prefix_len = int(separated_line[1])
 
                     # prefix value belongs to the interval <0, 64>
-                    if prefix_len < 1 or prefix_len > 64:
-                        continue
-
-                    if address[0] != '2':
+                    if prefix_len < 12 or prefix_len > 64:
                         continue
 
                     verified_addresses.add(AbstractHelper.get_binary_prefix(address))

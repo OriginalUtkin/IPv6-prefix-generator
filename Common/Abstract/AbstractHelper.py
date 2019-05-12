@@ -3,8 +3,6 @@ import random
 import ipaddress
 
 from typing import List, Dict
-from ..Converter.Converter import Converter
-from ipaddress import IPv6Address
 
 
 @attr.s
@@ -34,7 +32,12 @@ class AbstractHelper:
 
     @staticmethod
     def group_by_length(distribution: Dict) -> List[Dict]:
+        """Create a dictionary, which conatins a info about number of prefixes on each organisation
+        level.
 
+        :param distribution: prefix distribution.
+        :return: dictionary which contains information about number of prefixes on each organisation level
+        """
         statistic = [
             {'interval': [0, 12], 'prefixes_num': 0},
             {'interval': [12, 32], 'prefixes_num': 0},
@@ -93,7 +96,14 @@ class AbstractHelper:
         return binary_prefix[:parsed_address['length']]
 
     @staticmethod
-    def get_bit_position(bit_value: str, prefixes: List):
+    def get_bit_position(bit_value: str, prefixes: List) -> Dict:
+        """
+        Additional method which was used for analysis of bit distribution. This statistic wasn't used in final version
+        of paper. However using this method is possible to get this statistic and analyze how generating algorithm works
+        :param bit_value: bit value for analyse
+        :param prefixes: prefixes dataset for analyze
+        :return: dictionary contains how often (in %) bit could be found on particular position. Based on input dataset
+        """
         result = {key: 0 for key in range(0, 64)}
 
         for prefix in prefixes:

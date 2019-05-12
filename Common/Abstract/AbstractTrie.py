@@ -81,22 +81,6 @@ class AbstractTrie:
         if node.level > self.trie_level:
             self._max_trie_level = node.level
 
-
-
-
-    def v6gene_calculate_level(self, node: Node):
-        full_path = AbstractTrie.get_just_prefix_path(node)
-        new_level = 0
-
-        if node.left_child or node.right_child:
-            # new prefix node is internal node
-            node.level = self.get_maximum_child_level(node) + 1
-
-        if self.is_recalculate_level(prefix_path=full_path, new_level=new_level):
-            # recalculate level for parent nodes
-            self.recalculate_level(full_path, new_level)
-
-
     def is_possible_recalculate_parent_level(self, parents_nodes: List[Node], new_level_value) -> bool:
         """Check if parent nodes level could be recalculated and new prefix could be added.
         :param parents_nodes: list of parent nodes
@@ -124,7 +108,14 @@ class AbstractTrie:
 
         return False
 
-    def recalculate_level(self, prefix_path, new_level):
+    def recalculate_level(self, prefix_path, new_level) -> None:
+        """
+        Provide algorithm for recalculating level of nodes in path for selected node
+        :param prefix_path: path that contains all prefix nodes
+        :param new_level: level value of inserted node
+        :raises MaximumLevelException in case if recalculating isn't possible. This is just a additional check
+        :return: None
+        """
         for counter in range(len(prefix_path)):
 
             if counter + new_level + 1 > self.max_possible_level:
@@ -159,7 +150,12 @@ class AbstractTrie:
         return full_path
 
     @staticmethod
-    def get_path_to_previous_prefix(node: Node):
+    def get_path_to_previous_prefix(node: Node) -> List[Node]:
+        """
+        Get all nodes before the inserted node :param node
+        :param node: last node in the path
+        :return: list of all nodes in the path from the :param node
+        """
         full_path = list()
         current_node = node
 
@@ -206,7 +202,6 @@ class AbstractTrie:
 
         max_child_level = max(node.level for node in first_childs)
         return max_child_level
-
 
     @staticmethod
     def construct_binary_representation(nodes) -> str:
@@ -257,20 +252,18 @@ class AbstractTrie:
         return prefix_nodes
 
     @staticmethod
-    def delete_node_from_trie(removed_node: Node) -> None:
+    def delete_node_from_trie(node: Node) -> None:
+        """Delete node and all unused internal nodes.
+        :param node: pointer to the node which should be removed from binary trie
+        :return: None
         """
+        path = AbstractTrie.get_path_to_previous_prefix(node)
 
-        :param removed_node:
-        :return:
-        """
-        path = AbstractTrie.get_path_to_previous_prefix(removed_node)
-        affected_node = removed_node
-
-        parent = path[1]
         child = path[0]
-        #
+
         for count in range(len(path)):
-            if (child == affected_node) or (not child.prefix_flag and not child.left_child and not child.right_child):
+            if (child == node) or (not child.prefix_flag and not child.left_child and not child.right_child):
+                parent = path[count + 1]
 
                 if parent.right_child == child:
                     parent.right_child = None
@@ -278,14 +271,7 @@ class AbstractTrie:
                 else:
                     parent.left_child = None
 
-                if parent.right_child or parent.left_child:
-                    break
-
-                if parent.prefix_flag:
-                    break
-
                 child = parent
-                parent = path[count + 2]
 
                 continue
 
@@ -326,13 +312,17 @@ class AbstractTrie:
         return False
 
     @staticmethod
-    def level_stats(node):
+    def level_stats(node) -> Optional[Dict]:
+        """Return level statistic for nodes in trie structure
 
+        :param node: pointer to the root node or node which is root for the particular sub-trie
+        :return: information about how many nodes have particular value of level
+        """
         if not node:
             return
 
         node_path = list()
-        levels = {key: 0 for key in range(6)}
+        levels = {key: 0 for key in range(7)}
         node_path.append(node)
 
         while node_path:
