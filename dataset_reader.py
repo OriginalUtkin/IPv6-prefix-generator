@@ -10,6 +10,10 @@ def get_datasets(path_to_datasets: str):
 def process_datasets(input_datasets_path: List[str]):
 
     for dataset in input_datasets_path:
+
+        if dataset == 'CAIDA_datasets/CAIDA':
+            continue
+
         prefixes = set()
 
         with open(f'{dataset}') as input_dataset:

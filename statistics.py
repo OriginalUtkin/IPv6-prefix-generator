@@ -1,6 +1,9 @@
+# was developed by Utkin Kirill
+
 import Common.Abstract.AbstractHelper as tt
 import matplotlib.pyplot as plt
 import numpy as np
+
 from Common.Abstract.AbstractTrie import AbstractTrie
 from IPv6Gene.Generator.Helper import Helper
 
@@ -54,6 +57,9 @@ def level_distribution(distribution, set_name) -> None:
     xs = list(distribution.keys())
     ys = list(distribution.values())
     ax.bar(xs, ys, color='blue')
+
+    plt.ylabel("Počet prefixů")
+    plt.xlabel("Hodnota úrovně prefixového uzlu")
 
     plt.grid(linewidth=0.3)
 
@@ -126,6 +132,7 @@ def small_percent_value_part(dist, set_name) -> None:
 
     plt.show()
 
+
 def get_prefix_nodes_info(root_node) -> None:
     """
     Calculate number of nodes which were allocated without regarding the allocation policy. Final result will be printed
@@ -139,14 +146,14 @@ def get_prefix_nodes_info(root_node) -> None:
 
     node_path = list()
     node_path.append(root_node)
-    prefixes = list()
+    prefixes_test = list()
 
     while node_path:
 
         node = node_path.pop()
 
         if node.prefix_flag:
-            prefixes.append(node)
+            prefixes_test.append(node)
 
         if node.right_child:
             node_path.append(node.right_child)
@@ -156,7 +163,7 @@ def get_prefix_nodes_info(root_node) -> None:
 
     incorrect_nodes = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
 
-    for prefix_node in prefixes:
+    for prefix_node in prefixes_test:
 
         full_prefix_path = AbstractTrie.get_just_prefix_path(prefix_node)[1:]
 
@@ -187,7 +194,7 @@ def create_stats(output_prefixes: List[str], name: str, root_node) -> None:
     """
     depth_distribution = {key: 0 for key in range(65)}
 
-    get_prefix_nodes_info(root_node)
+    # get_prefix_nodes_info(root_node)
 
     for single_prefix in output_prefixes:
         prefix_len = int(single_prefix.split('/')[1])
@@ -196,7 +203,7 @@ def create_stats(output_prefixes: List[str], name: str, root_node) -> None:
     depth_distribution_graph(depth_distribution, name)
 
     level_distribution_stats = AbstractTrie.level_stats(root_node)
-    level_distribution(level_distribution_stats, current_set)
+    level_distribution(level_distribution_stats, name)
 
 
 def compare_memory() -> None:
@@ -207,7 +214,7 @@ def compare_memory() -> None:
     """
     number_of_prefixes = [68750, 150000, 250000, 450000]
     memory_v6Gene = [0.215, 0.470, 0.808, 1.41]
-    memory_own = [0.500, 0.920, 1.55, 2.52]
+    memory_own = [0.490, 0.920, 1.55, 2.52]
 
     plt.plot(number_of_prefixes, memory_v6Gene, color='red', linewidth=1,
              marker='x', markerfacecolor='blue', markersize=12, label='V6Gene')
@@ -233,8 +240,8 @@ def time_complexity() -> None:
     :return: None
    """
     number_of_prefixes = [68750, 150000, 250000, 450000]
-    v6gene_time = [6.43, 12.34, 21.11, 38.6]
-    own_time = [6.96, 16.34, 28.1,47.42]
+    v6gene_time = [5.20, 12.34, 21.11, 38.6]
+    own_time = [6.06, 16.34, 28.1,47.42]
 
     plt.plot(number_of_prefixes, v6gene_time, color='red', linewidth=1,
              marker='x', markerfacecolor='blue', markersize=12, label='V6Gene')
@@ -261,6 +268,7 @@ if __name__ == '__main__':
         path = f"formated_datasets/{current_set}"
 
         prefixes = InputArgumentsValidator.read_seed_file(path)
+        print(f"Number of uniq prefixes which could be generated or used for generating process {len(prefixes)}")
 
         binary_trie = Trie()
         depth_distribution_stats = {key: 0 for key in range(65)}

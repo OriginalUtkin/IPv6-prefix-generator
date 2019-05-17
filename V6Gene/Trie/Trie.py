@@ -6,7 +6,6 @@ from Common.Exceptions.Exceptions import PrefixAlreadyExists, MaximumLevelExcept
 from Common.Abstract.AbstractTrie import AbstractTrie
 
 from typing import Dict, List, Optional
-from random import randint
 
 
 @attr.s
@@ -175,14 +174,13 @@ class Trie(AbstractTrie):
             if self._trie_traversal_generated == self._maximum_trie_traversal_generated:
                 break
 
-            all_keys = list(self.Help.distribution_plan[prefix_depth_level + 1]['generated_info'].keys())
-            new_prefix_depth = list(self.Help.distribution_plan[prefix_depth_level + 1]['generated_info'].keys())[randint(0, len(all_keys) - 1)]
+            new_prefix_depth = list(self.Help.distribution_plan[prefix_depth_level + 1]['generated_info'].keys())[0]
 
             number_of_generated_prefixes = self.Help.get_plan_values(prefix_depth_level + 1, new_prefix_depth)
 
             try:
                 new_bits = Helper.generate_new_bits(node.depth, new_prefix_depth)
-                self.add_node(new_bits, node, False)
+                self.add_node(new_bits, parent_node=node, creating_phase=False)
 
                 if number_of_generated_prefixes - 1 == 0:
                     self.Help.remove_from_plan(prefix_depth_level + 1, new_prefix_depth)
@@ -196,4 +194,5 @@ class Trie(AbstractTrie):
             except (PrefixAlreadyExists, MaximumLevelException):
                 self._trie_traversal_generated += 1
                 used_strategy -= 1
+                node.allow_generate = False
                 continue

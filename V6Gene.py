@@ -1,3 +1,5 @@
+# was developed by Utkin Kirill
+
 from V6Gene.Generator.v6Generator import V6Generator
 from Common.Validator.Validator import InputArgumentsValidator as validator
 from typing import Dict
@@ -78,15 +80,12 @@ def parse_args() -> Dict[str, str]:
                                          "prefixes will be print to standard output")
 
     parser.add_argument('--prefix_quantity', required=True, type=validator.validate_prefix_quantity, help="Defines number of "
-                                                                                                "prefixes to generate."
+                                                                                                "prefixes in output dataset."
                                                                                                 "Should be defined by "
                                                                                                 "positive integer value"
                         )
 
-    parser.add_argument('--rgr', required=True, type=validate_rgr, help="Defines as the ratio of the number of prefixes"
-                                                                        " to be generated without regarding to the "
-                                                                        "seed prefix file to the number of all prefixes"
-                                                                        " to be generated")
+    parser.add_argument('--rgr', required=True, type=validate_rgr, help="Defines as number of prefixes which should be created randomly and without regarding seed prefix file")
 
     parser.add_argument('--depth_distribution', type=validator.parse_depth_distribution, help="Defines a distribution by depth. "
                                                                                     "Can't be combined with "
@@ -104,7 +103,7 @@ def parse_args() -> Dict[str, str]:
                                                                                               "depth distribution "
                                                                                               "data. Sample file could "
                                                                                               "be found in the "
-                                                                                              "distributions/V6Gene "
+                                                                                              "distributions/depth_distribution"
                                                                                               "folder. This argument "
                                                                                               "can't be combined with "
                                                                                               "depth_distribution "
@@ -116,27 +115,23 @@ def parse_args() -> Dict[str, str]:
                                                                                          "contains level distribution "
                                                                                          "data. Sample file could be "
                                                                                          "found in the "
-                                                                                         "distributions/V6Gene folder. "
+                                                                                         "distributions/level_distribution folder. "
                                                                                          "This argument can't be "
                                                                                          "combined with level_"
                                                                                          "distribution argument. If not"
                                                                                          " given, level_distribution is"
                                                                                          " required")
 
-    parser.add_argument('--graph', action='store_true', required=False, help="Allow to create output depth distribution graph. Graph will "
-                                                                             "be saved to stats_output folder. After creating graph, "
-                                                                             "additional information as level distribution will be printed"
-                                                                             "to output."
+    parser.add_argument('--graph', action='store_true', required=False, help="Allow to create output depth and level distribution graph. Graph will "
+                                                                             "be saved to statistics folder"
     )
-
-    parser.add_argument('--stats', action='store_true', required=False, help="Print information during the generating "
-                                                                             "process")
 
     return vars(parser.parse_args())
 
 
 def start_generator() -> None:
     start = time.time()
+
     try:
         parsed_arguments = parse_args()
 
@@ -181,11 +176,6 @@ def start_generator() -> None:
         input_prefixes=input_prefixes
     )
 
-    if parsed_arguments['stats']:
-        print(f"[INFO] Number of prefixes in seed input file is {len(set(input_prefixes))}")
-        print(f"[INFO] Constructed binary trie depth is {generator._binary_trie.trie_depth}")
-        print(f"[INFO] Constructed binary trie level is {generator._binary_trie.trie_level}")
-
     new_prefixes = generator.start_generating()
 
     if parsed_arguments['graph']:
@@ -195,20 +185,12 @@ def start_generator() -> None:
         for prefix in new_prefixes:
             print(prefix)
 
-    if parsed_arguments['stats']:
-        print(f"[INFO] Number of prefixes after generating {len(new_prefixes)}")
-        print(f"[INFO] Binary trie depth after generating is {generator._binary_trie.trie_depth}")
-        print(f"[INFO] Binary trie level after generating is {generator._binary_trie.trie_level}")
-
     if parsed_arguments['output']:
         with open(parsed_arguments['output'], 'a') as file:
             for prefix in new_prefixes:
                 file.write(prefix + '\n')
 
     end = time.time()
-
-    if parsed_arguments['stats']:
-        print(end - start)
 
 
 if __name__ == "__main__":

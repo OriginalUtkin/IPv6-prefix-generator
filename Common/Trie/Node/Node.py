@@ -1,3 +1,6 @@
+# was developed by Utkin Kirill
+
+
 import attr
 
 from typing import Optional
@@ -19,7 +22,7 @@ class Node:
     is_visited = attr.ib(default=False, type=bool)
     allow_generate = attr.ib(default=True, type=bool)
 
-    # is used just for debug proposal
+    # is used just for debug purpose
     name = attr.ib(default=None, type=str)
 
     @node_value.validator

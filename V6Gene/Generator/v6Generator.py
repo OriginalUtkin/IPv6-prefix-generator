@@ -1,3 +1,5 @@
+# was developed by Utkin Kirill
+
 import attr
 
 from typing import Dict
@@ -161,7 +163,10 @@ class V6Generator:
 
             # deleting prefixes
             if new_prefixes_num < 0:
-                raise ValueError(f"Cannot delete prefixes from {i} level")
+                raise ValueError(f"[ERROR] Number of prefixes specified by depth_distribution in interval "
+                                 f"{initiate_distribution[i]['interval'][0]} - {initiate_distribution[i]['interval'][1]}"
+                                 f" less than 0. Generator cannot allow remove prefixes.\n Please, change"
+                                 f" depth_distribution parameter")
 
             # If exists some leafs nodes on previous depth level -> prefixes will be generated from them
             if self.Help.group_by_length(self._binary_trie.prefix_leaf_nodes)[i-1]['prefixes_num'] > 0:
@@ -171,10 +176,12 @@ class V6Generator:
             current_value = self._binary_trie.prefix_nodes.get(depth)
 
             if prefixes_num < 0:
-                raise ValueError("Number of prefixes can't be less than zero")
+                raise ValueError(f"[ERROR] Number of prefixes can't be less than zero. Check depth distribution "
+                                 f"argument for depth {depth}")
 
             if depth < 0:
-                raise ValueError("Level value can't be less than zero")
+                raise ValueError(f"[ERROR] Depth, specified in seed prefix file or depth distribution file, cannot be less than zero. Please, "
+                                 f"change this negative value in depth_distribution parameter on depth {depth}")
 
             if current_value is None:  # depth doesn't exist in trie
                 # Set number of prefixes on this depth as 0
@@ -182,7 +189,7 @@ class V6Generator:
 
             # input distribution contains less prefixes than already are in trie on the same depth
             if prefixes_num - current_value < 0:
-                raise ValueError(f"Number of prefixes on generated depth can't be less than current number in depth  {depth}. Number of prefixes in seed file is {current_value}, number of prefixes in depth distribution is {prefixes_num}")
+                raise ValueError(f"[ERROR] Number of prefixes on generated depth can't be less than current number in depth  {depth}. Number of prefixes in seed file is {current_value}, number of prefixes in depth distribution is {prefixes_num}")
 
         new_prefixes = sum(item['prefixes_num'] for item in final_distribution) - \
                        sum(item['prefixes_num'] for item in initiate_distribution)
@@ -192,7 +199,7 @@ class V6Generator:
 
     def _check_level_distribution(self) -> None:
         if self._binary_trie.trie_level > self._max_level():
-            raise ValueError("Current max trie level more than max lvl from level distribution parameter")
+            raise ValueError("[ERROR] Generator can't start. Trie contains nodes which already have level greater than allowed maximum level specified by input parameter. Please, change maximum possible level or use another input set")
 
     def _max_level(self) -> int:
         max_level = 0

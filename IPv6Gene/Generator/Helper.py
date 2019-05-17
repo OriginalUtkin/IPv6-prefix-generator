@@ -1,3 +1,5 @@
+# was developed by Utkin Kirill
+
 from Common.Abstract.AbstractHelper import AbstractHelper
 
 

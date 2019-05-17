@@ -1,3 +1,5 @@
+# was developed by Utkin Kirill
+
 import attr
 
 from Common.Abstract.AbstractHelper import AbstractHelper
@@ -7,7 +9,6 @@ from IPv6Gene.Generator.Helper import Helper
 from IPv6Gene.Generator.RandomGenerator import RandomGenerator
 from Common.Converter.Converter import Converter
 from typing import Dict, List
-
 
 @attr.s
 class V6Generator:
@@ -144,11 +145,11 @@ class V6Generator:
                 continue
 
             if i == 0 and new_prefixes_num > 0:
-                raise ValueError("New prefixes cannot be generated with length which less than 12")
+                raise ValueError("[ERROR] New prefixes cannot be generated with length which less than 12")
 
             # deleting prefixes
             if new_prefixes_num < 0:
-                raise ValueError(f"Number of prefixes specified by depth_distribution in interval "
+                raise ValueError(f"[ERROR] Number of prefixes specified by depth_distribution in interval "
                                  f"{initiate_distribution[i]['interval'][0]} - {initiate_distribution[i]['interval'][1]}"
                                  f" less than 0. Generator cannot allow remove prefixes.\n Please, change"
                                  f" depth_distribution parameter")
@@ -157,11 +158,12 @@ class V6Generator:
             current_value = self._binary_trie.prefix_nodes.get(depth)
 
             if prefixes_num < 0:
-                raise ValueError("Number of prefixes can't be less than zero")
+                raise ValueError(f"[ERROR] Number of prefixes can't be less than zero. Check depth distribution "
+                                 f"argument for depth {depth}")
 
             if depth < 0:
-                raise ValueError("Depth, specified in seed prefix file, cannot be less than zero. Please, change this "
-                                 "negative value in depth_distribution parameter")
+                raise ValueError(f"[ERROR] Depth, specified in seed prefix file or depth distribution file, cannot be less than zero. Please, "
+                                 f"change this negative value in depth_distribution parameter on depth {depth}")
 
             if current_value is None:  # depth doesn't exist in trie
                 # Set number of prefixes on this depth as 0
@@ -169,7 +171,7 @@ class V6Generator:
 
             # input distribution contains less prefixes than already are in trie on the same depth
             if prefixes_num - current_value < 0:
-                raise ValueError(f"Number of prefixes specified by depth_distribution in depth {depth} "
+                raise ValueError(f"[ERROR] Number of prefixes specified by depth_distribution in depth {depth} "
                                  f" less than number of prefixes in seed prefix file with the same prefix length"
                                  f". Generator cannot allow remove prefixes.\n Please, change "
                                  f"depth_distribution parameter")
@@ -181,7 +183,7 @@ class V6Generator:
             init_sum += initiate_distribution[prefixes]['prefixes_num']
 
         if (len(self.input_prefixes) + (final_sum - len(self.input_prefixes))) - self.prefix_quantity != 0:
-            raise ValueError(f"[ERROR]Number of prefixes defined by --prefix_quantity is different than number of "
+            raise ValueError(f"[ERROR] Number of prefixes defined by --prefix_quantity is different than number of "
                 f"prefixes specified by --depth_distribution.\nNumber of prefixes specified by depth distribution parameter is: {final_sum}\n"
                 f"Number of prefixes specified by prefix_quantity {self.prefix_quantity} \nPlease, change number of prefixes in depth distribution or change prefix_quantity parameter")
 
@@ -193,4 +195,4 @@ class V6Generator:
         :return: None
         """
         if self._binary_trie.trie_level > self.max_level:
-            raise ValueError("Current max trie level more than level specified by max_level input argument.")
+            raise ValueError("[ERROR] Generator can't start. Trie contains nodes which already have level greater than allowed maximum level specified by input parameter. Please, change maximum possible level or use another input set.")

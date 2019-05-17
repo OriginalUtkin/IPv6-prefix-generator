@@ -1,3 +1,5 @@
+# was developed by Utkin Kirill
+
 import attr
 import random
 

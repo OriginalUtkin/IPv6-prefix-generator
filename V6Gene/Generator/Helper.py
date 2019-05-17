@@ -1,3 +1,5 @@
+# was developed by Utkin Kirill
+
 import attr
 
 from typing import Dict, List
@@ -96,7 +98,7 @@ class Helper(AbstractHelper):
         leaf_prefixes = self.group_by_length(prefix_leaf_nodes)
 
         for i in range(len(self.distribution_plan)):
-            print(i)
+
             # cannot generate from leaf nodes with len eq 64
             if i == len(self.distribution_plan) - 1:
                 break

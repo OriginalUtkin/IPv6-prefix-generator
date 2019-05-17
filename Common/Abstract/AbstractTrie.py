@@ -1,3 +1,5 @@
+# was developed by Utkin Kirill
+
 import attr
 
 from typing import List, Dict, Optional
@@ -118,14 +120,11 @@ class AbstractTrie:
         """
         for counter in range(len(prefix_path)):
 
-            if counter + new_level + 1 > self.max_possible_level:
-                raise MaximumLevelException
-
-            else:
+            if prefix_path[counter].level < new_level + counter + 1:
                 prefix_path[counter].level = new_level + counter + 1
 
-                if prefix_path[counter].level > self.trie_level:
-                    self._max_trie_level = prefix_path[counter].level
+            if prefix_path[counter].level > self.trie_level:
+                self._max_trie_level = prefix_path[counter].level
 
     @staticmethod
     def get_just_prefix_path(node: Node) -> List[Node]:
@@ -208,6 +207,7 @@ class AbstractTrie:
         """Construct binary representation of prefix using saved nodes.
 
         :param nodes: list of nodes that represents the path from root node to prefix node
+        :param nodes: list of nodes that represents the path from root node to prefix node
         :return: string which represents binary representation of prefix in trie
         """
         return ''.join([node.node_value for node in nodes if node.node_value])
@@ -258,11 +258,10 @@ class AbstractTrie:
         :return: None
         """
         path = AbstractTrie.get_path_to_previous_prefix(node)
-
         child = path[0]
 
         for count in range(len(path)):
-            if (child == node) or (not child.prefix_flag and not child.left_child and not child.right_child):
+            if (child is node) or (not child.prefix_flag and not child.left_child and not child.right_child):
                 parent = path[count + 1]
 
                 if parent.right_child == child:

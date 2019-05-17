@@ -1,3 +1,5 @@
+# was developed by Utkin Kirill
+
 import argparse
 import statistics
 import sys
@@ -21,27 +23,25 @@ def parse_args():
 
     parser.add_argument('--output', help="Defines a path to output file for printing generated prefixes")
 
-    parser.add_argument('--prefix_quantity', required=True, type=validate.validate_prefix_quantity, help="Defines number of "
-                                                                                                "prefixes to generate. "
+    parser.add_argument('--prefix_quantity', required=True, type=validate.validate_prefix_quantity, help="Number of prefixes in output dataset. "
                                                                                                 "Defined by integer "
                                                                                                 "positive value"
     )
 
-    parser.add_argument('--depth_distribution', type=validate.parse_depth_distribution, help="Defines a distribution by depth")
+    parser.add_argument('--depth_distribution', type=validate.parse_depth_distribution, help="Defines a distribution by depth. Sample depth distribution file could be found in distributions/depth_distribution folder")
 
-    parser.add_argument('--max_level', required=True, type=validate.parse_level_distribution, help="Defines maximum possible by "
-                                                                                          "level"
+    parser.add_argument('--max_level', required=True, type=validate.parse_level_distribution, help="Defines maximum possible node level in trie structure"
+
     )
 
     parser.add_argument('--depth_distribution_path', type=validate.parse_depth_distribution_file, help="Path to the file which "
-                                                                                              "contains depth "
-                                                                                              "distribution data"
+                                                                                                        "contains depth distribution data. Example distribution file could be found "
+                                                                                                        "in distributions/depth distribution folder"
+
     )
 
-    parser.add_argument('--graph', action='store_true', required=False, help="Allow to create output depth distribution graph. Graph will "
-                                                        "be saved to stats_output folder. After creating graph, "
-                                                        "additional information as level distribution will be printed"
-                                                        "to output."
+    parser.add_argument('--graph', action='store_true', required=False, help="Allow to create output depth and level distribution graph. Graph will "
+                                                        "be saved to statistics folder"
     )
 
     parser.add_argument('--stats', action='store_true', required=False, help="Print information during the generating process")
