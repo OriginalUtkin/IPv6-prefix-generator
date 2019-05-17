@@ -10,6 +10,7 @@ from IPv6Gene.Generator.RandomGenerator import RandomGenerator
 from Common.Converter.Converter import Converter
 from typing import Dict, List
 
+
 @attr.s
 class V6Generator:
     # Helper parameters
